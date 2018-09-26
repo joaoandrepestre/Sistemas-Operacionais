@@ -1,20 +1,17 @@
-#define MAX_PROCESSOS 100
-#define TEMPO 1
-#define DISCO 10
-#define FITA 20
-#define IMPRESSORA 30
+#include "simulador.h"
+#include <stdio.h>
 
-#include "fila.h"
-
-Fila altaprioridade;
-Fila baixaprioridade;
+Fila* f;
+IO io;
+/* Fila baixaprioridade;
 Fila impressora;
 Fila fita;
-Fila disco;
+Fila disco; */
 
 int main(){
-
-    int processos = 0;
+    io = impressora;
+    printf("%d\n", io);
+    /* int processos = 0;
 
     while(processos<MAX_PROCESSOS){
         criaProcessos(&processos); //no tempo atual, cria ou não um novo Processo
@@ -27,7 +24,7 @@ int main(){
         printf("Processo PID retornou do IO x para fila y");
 
         wait(TEMPO);
-    }
+    } */
 
     return 0;
 }
