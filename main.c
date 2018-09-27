@@ -9,6 +9,11 @@ int main()
     time_t seed;
     srand((unsigned)time(&seed));
 
+    int tempo_disco = 0; //Tempo restante para disco ser liberado. Se 0, então disco está livre para IO
+    int tempo_fita = 0;//Tempo restante para fita ser liberada. Se 0, então fita está livre para IO
+    int tempo_impressora = 0;//Tempo restante para impressora ser liberada. Se 0, então impressora está livre para IO
+
+    //Inicia as filas de alta e baixa prioridade e uma fila para cada tipo  de IO
     Fila *alta_prioridade;
     Fila *baixa_prioridade;
     Fila *fila_disco;
@@ -24,7 +29,7 @@ int main()
     int tempo = 0;
     int id = 1;
 
-    while (!filaVazia(alta_prioridade) || !filaVazia(baixa_prioridade) || !filaVazia(fila_disco) || !filaVazia(fila_fita) || !filaVazia(fila_impressora))
+    while (tempo_disco!=0 || tempo_fita!=0 || tempo_impressora!=0 || id<=MAX_PROCESSOS || !filaVazia(alta_prioridade) || !filaVazia(baixa_prioridade) || !filaVazia(fila_disco) || !filaVazia(fila_fita) || !filaVazia(fila_impressora))
     {
         printf("Tempo t = %d\n",tempo);
 
@@ -82,8 +87,9 @@ int main()
         printFila(fila_impressora);
         printf("\n");
 
-        executaIO(fila_disco, fila_fita, fila_impressora, alta_prioridade, baixa_prioridade); //executa processos que exigem IO das filas de IO e retorna para as filas corretas
+        executaIO(&tempo_disco, &tempo_fita, &tempo_impressora, fila_disco, fila_fita, fila_impressora, alta_prioridade, baixa_prioridade); //executa processos que exigem IO das filas de IO e retorna para as filas corretas
 
+        //printf("Processos em IO:\n\tDisco : %d\n\tFita: %d\n\tImpressora: %d\n\n",io_disco->contexto.PID,io_fita->contexto.PID,io_impressora->contexto.PID);
         printf("Após execução de IO:\n");
         printf("Fila de Alta Prioridade: ");
         printFila(alta_prioridade);
@@ -106,6 +112,8 @@ int main()
 
         tempo++;
     }
+
+    printf("\nTodos os processos foram finalizados em %d fatias de tempo.\n", tempo);
 
     destroiFila(alta_prioridade);
     destroiFila(baixa_prioridade);

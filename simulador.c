@@ -3,11 +3,8 @@
 #include <stdio.h>
 
 //Define variáveis globais para realização de IO
-int tempo_disco = 0; //Tempo restante para disco ser liberado. Se 0, então disco está livre para IO
 Processo* io_disco; // Ponteiro de referência para Processo ocupando o disco. Se NULL, disco está dlivre para IO
-int tempo_fita = 0;//Tempo restante para fita ser liberada. Se 0, então fita está livre para IO
 Processo* io_fita;// Ponteiro de referência para Processo ocupando a fita. Se NULL, fita está livre para IO
-int tempo_impressora = 0;//Tempo restante para impressora ser liberada. Se 0, então impressora está livre para IO
 Processo* io_impressora;// Ponteiro de referência para Processo ocupando a impressora. Se NULL, impressora está livre para IO
 
 //Cria uma nova estrutura de fila
@@ -101,7 +98,7 @@ void insereProcesso(int tempo_atual, int* id, Fila* alta_prioridade, int probabi
     int duracao_total; //Declara duração total
 
     int criar = rand() % 100; //Gera um número aleatório entre 0 e 100
-    if(criar > 100-probabilidade_criar_processo && (*id) < MAX_PROCESSOS){//O código asseguir é executado em probabilidade_criar_processo a cada 100 vezes
+    if(criar > 100-probabilidade_criar_processo && (*id) <= MAX_PROCESSOS){//O código asseguir é executado em probabilidade_criar_processo a cada 100 vezes
         tipo_io = rand()%4;//Gera um número aleatório entre 0 e 4. Tipo de IO mapeado na tabela em simulador.h
         tempo_io = tempo_atual+rand()%5;//IO pode iniciar entre o início da execução e o 5 fatias de tempo após o início
         switch(tipo_io){//Mapeia tempos de IO segundo tipos. Constantes definidas em simulador.h
@@ -153,7 +150,7 @@ void executaProcesso(int tempo_atual, Fila* alta_prioridade, Fila* baixa_priorid
     int id = atual->contexto.PID;//Pega o identificador do processo
     printf("Processo %d foi selecionado para execução no tempo %d.\n", id, tempo_atual);//Informa o usuário que o processo foi criado
 
-    if(atual->tempo_inicial_IO >= tempo_atual){//Se o processo precisa fazer IO nesse momento
+    if(atual->tempo_inicial_IO <= tempo_atual){//Se o processo precisa fazer IO nesse momento
         switch(atual->tipo_IO){//Encaminha o processo para a fila de IO apropriada
             case 1:
                 push(fila_disco, atual);
@@ -180,55 +177,58 @@ void executaProcesso(int tempo_atual, Fila* alta_prioridade, Fila* baixa_priorid
 }
 
 //Passa processos das filas de IO para execução de IO
-void executaIO(Fila* fila_disco, Fila* fila_fita, Fila* fila_impressora, Fila* alta_prioridade, Fila* baixa_prioridade){
+void executaIO(int* tempo_disco, int* tempo_fita, int* tempo_impressora, Fila* fila_disco, Fila* fila_fita, Fila* fila_impressora, Fila* alta_prioridade, Fila* baixa_prioridade){
 
-    if(tempo_disco==0){//Se o disco não está ocupado
+    if(*tempo_disco==0){//Se o disco não está ocupado
         io_disco = pop(fila_disco);//Pega o primeiro processo da fila de disco
         if(io_disco != NULL){//Se a fila de disco não está vazia
             printf("Processo %d foi selecionado para IO de disco.\n",io_disco->contexto.PID);//Informa que o IO do processo foi iniciado  
-            tempo_disco = DISCO;//Define o tempo restante para o fim do IO
+            *tempo_disco = DISCO;//Define o tempo restante para o fim do IO
         }
     }
     else{//Se o disco está ocupado
-        printf("Disco ocupado com processo %d será liberado em %d fatias de tempo.\n", io_disco->contexto.PID, tempo_disco);//Informa o usúario qual processo está ocupando e o tempo restante 
-        tempo_disco--;//Executa o IO (decrementa o tempo restante do disco ocupado)
+        printf("Disco ocupado com processo %d será liberado em %d fatias de tempo.\n", io_disco->contexto.PID, *tempo_disco);//Informa o usúario qual processo está ocupando e o tempo restante 
+        (*tempo_disco)--;//Executa o IO (decrementa o tempo restante do disco ocupado)
         io_disco->duracao_restante--;//E decrementa a duração restante de execução do processo
-        if(tempo_disco==0){//Se o IO foi finalizado
+        if(*tempo_disco==0){//Se o IO foi finalizado
             printf("Processo %d finalizou IO de disco e voltou para fila de baixa prioridade.\n",io_disco->contexto.PID);//Informa o usúario do fim do IO 
+            io_disco->tipo_IO=0;
             push(baixa_prioridade, io_disco);//Retorna o processo para a fila de baixa prioridade
         }
     }
 
-    if(tempo_fita==0){//Se a fita não está ocupada
+    if(*tempo_fita==0){//Se a fita não está ocupada
         io_fita = pop(fila_fita);//Pega o primeiro processo da fila de fita
         if(io_fita != NULL){//Se a fila de fita não está vazia
             printf("Processo %d foi selecionado para IO de fita.\n",io_fita->contexto.PID);//Informa que o IO do processo foi iniciado
-            tempo_fita = FITA;//Define o tempo restante para o fim do IO
+            *tempo_fita = FITA;//Define o tempo restante para o fim do IO
         }
     }
     else{//Se a fita está ocupada
-        printf("Fita ocupada com processo %d será liberada em %d fatias de tempo.\n", io_fita->contexto.PID, tempo_fita);//Informa o usúario qual processo está ocupando e o tempo restante
-        tempo_fita--;//Executa o IO (decrementa o tempo restante da fita ocupada)
+        printf("Fita ocupada com processo %d será liberada em %d fatias de tempo.\n", io_fita->contexto.PID, *tempo_fita);//Informa o usúario qual processo está ocupando e o tempo restante
+        (*tempo_fita)--;//Executa o IO (decrementa o tempo restante da fita ocupada)
         io_fita->duracao_restante--;//E decrementa a duração restante de execução do processo
-        if(tempo_fita==0){//Se o IO foi finalizado
+        if(*tempo_fita==0){//Se o IO foi finalizado
             printf("Processo %d finalizou IO de fita e voltou para fila de alta prioridade.\n",io_fita->contexto.PID);//Informa o usúario do fim do IO
+            io_fita->tipo_IO=0;
             push(alta_prioridade, io_fita);//Retorna o processo para a fila de alta prioridade
         }
     }
 
-    if(tempo_impressora==0){//Se a impressora não está ocupada
+    if(*tempo_impressora==0){//Se a impressora não está ocupada
         io_impressora = pop(fila_impressora);//Pega o primeiro processo da fila de impressora
         if(io_impressora != NULL){//Se a fila de impressora não está vazia
             printf("Processo %d foi selecionado para IO de impressora.\n",io_impressora->contexto.PID);//Informa que o IO do processo foi iniciado 
-            tempo_impressora = IMPRESSORA;//Define o tempo restante para o fim do IO
+            *tempo_impressora = IMPRESSORA;//Define o tempo restante para o fim do IO
         }
     }
     else{//Se a impressora está ocupada
-        printf("Impressora ocupada com processo %d será liberada em %d fatias de tempo.\n", io_impressora->contexto.PID, tempo_impressora);//Informa o usúario qual processo está ocupando e o tempo restante
-        tempo_impressora--;//Executa o IO (decrementa o tempo restante da impressora ocupada)
+        printf("Impressora ocupada com processo %d será liberada em %d fatias de tempo.\n", io_impressora->contexto.PID, *tempo_impressora);//Informa o usúario qual processo está ocupando e o tempo restante
+        (*tempo_impressora)--;//Executa o IO (decrementa o tempo restante da impressora ocupada)
         io_impressora->duracao_restante--;//E decrementa a duração restante de execução do processo
-        if(tempo_impressora==0){//Se o IO foi finalizado
+        if(*tempo_impressora==0){//Se o IO foi finalizado
             printf("Processo %d finalizou IO de impressora e voltou para fila de alta prioridade.\n",io_impressora->contexto.PID);//Informa o usúario do fim do IO
+            io_impressora->tipo_IO=0;
             push(alta_prioridade, io_impressora);//Retorna o processo para a fila de alta prioridade
         }
     }

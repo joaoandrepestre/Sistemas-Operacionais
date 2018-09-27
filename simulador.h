@@ -74,7 +74,7 @@ void insereProcesso(int tempo_atual, int* id, Fila* alta_prioridade, int probabi
 void executaProcesso(int tempo_atual, Fila* alta_prioridade, Fila* baixa_prioridade, Fila* fila_disco, Fila* fila_fita, Fila* fila_impressora);
 //Executar processos das filas
 
-void executaIO(Fila* fila_disco, Fila* fila_fita, Fila* fila_impressora, Fila* alta_prioridade, Fila* baixa_prioridade);
+void executaIO(int* tempo_disco, int* tempo_fita, int* tempo_impressora, Fila* fila_disco, Fila* fila_fita, Fila* fila_impressora, Fila* alta_prioridade, Fila* baixa_prioridade);
 //Passa processos das filas de IO para execução de IO
 
 
