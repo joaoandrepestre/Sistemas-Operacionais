@@ -37,60 +37,80 @@ int main()
     int id = 1;
     int fim = 0;
 
-    while (!fim) // Enquanto a simulação não chego uao fim
-    {
-        printf("Tempo t = %d\n",tempo);
+    /* Processo tmp[] = {{ .contexto = { .PID = 1, .prioridade = alta, .status=ready},
+                              .tempo_inicial = 0,
+                              .duracao_restante =3 
+                              },
+                            { .contexto = { .PID = 2, .prioridade = alta, .status=ready},
+                            .tempo_inicial = 2,
+                            .duracao_restante = 6 
+                            },
+                            { .contexto = { .PID = 3, .prioridade = alta, .status=ready},
+                            .tempo_inicial = 4,
+                            .duracao_restante = 4 
+                            },
+                            { .contexto = { .PID = 4, .prioridade = alta, .status=ready},
+                            .tempo_inicial = 6,
+                            .duracao_restante = 5
+                            },
+                            { .contexto = { .PID = 5, .prioridade = alta, .status=ready},
+                            .tempo_inicial = 8,
+                            .duracao_restante = 2
+                            }
+                            };
 
+    Processo *processos[5];
+    int i;
+    for(i=0;i<5;i++){
+        processos[i] = &tmp[i];
+    } */
+
+    while (!fim) // Enquanto a simulação não chegou ao fim
+    {
+        printf("\nTempo t = %d\n",tempo);
         printf("Fila de Alta Prioridade: ");
         printFila(alta_prioridade);
-
         printf("Fila de Baixa Prioridade: ");
         printFila(baixa_prioridade);
-
         printf("Fila de Disco: ");
         printFila(fila_disco);
-
         printf("Fila de Fita: ");
         printFila(fila_fita);
-
         printf("Fila de Impressora: ");
         printFila(fila_impressora);
         printf("\n");
         
         insereProcesso(tempo, &id, alta_prioridade, 60); //no tempo atual, cria ou não um novo Processo
+        /* if(id<=5 && processos[id-1]->tempo_inicial == tempo){
+            push(alta_prioridade, processos[id-1]);
+            id++;
+        } */
 
-        printf("Após criação de processos:\n");
+        printf("\nFilas após criação de processos:\n");
         printf("Fila de Alta Prioridade: ");
         printFila(alta_prioridade);
-
         printf("Fila de Baixa Prioridade: ");
         printFila(baixa_prioridade);
-
         printf("Fila de Disco: ");
         printFila(fila_disco);
-
         printf("Fila de Fita: ");
         printFila(fila_fita);
-
         printf("Fila de Impressora: ");
         printFila(fila_impressora);
         printf("\n");
 
         executaProcesso(tempo, &executando, alta_prioridade, baixa_prioridade, fila_disco, fila_fita, fila_impressora); //executa o processo da fila de prioridade correta
+        if(executando != NULL) printf("Processo %d está sendo executado.\n", executando->contexto.PID);
 
-        printf("Após execução de processos:\n");
+        printf("\nFilas após seleção de processos para execução:\n");
         printf("Fila de Alta Prioridade: ");
         printFila(alta_prioridade);
-
         printf("Fila de Baixa Prioridade: ");
         printFila(baixa_prioridade);
-
         printf("Fila de Disco: ");
         printFila(fila_disco);
-
         printf("Fila de Fita: ");
         printFila(fila_fita);
-
         printf("Fila de Impressora: ");
         printFila(fila_impressora);
         printf("\n");
@@ -99,19 +119,15 @@ int main()
         executaIO(fita,&tempo_fita, &io_fita, fila_fita);//Executa IO do processo na cabeça da fila de fita
         executaIO(impressora,&tempo_impressora, &io_impressora, fila_impressora);//Executa IO do processo na cabeça da fila de impressora
 
-        printf("Após execução de IO:\n");
+        printf("\nFilas após seleção de processos para IO:\n");
         printf("Fila de Alta Prioridade: ");
         printFila(alta_prioridade);
-
         printf("Fila de Baixa Prioridade: ");
         printFila(baixa_prioridade);
-
         printf("Fila de Disco: ");
         printFila(fila_disco);
-
         printf("Fila de Fita: ");
         printFila(fila_fita);
-
         printf("Fila de Impressora: ");
         printFila(fila_impressora);
         printf("\n");
@@ -125,7 +141,7 @@ int main()
         terminaExecucaoIO(fita, &tempo_fita, &io_fita, alta_prioridade);
         terminaExecucaoIO(impressora, &tempo_impressora, &io_impressora, alta_prioridade);
 
-        printf("\n----------------------------------------------------------------\n\n");
+        printf("\n----------------------------------------------------------------\n");
         tempo++;
         fim = fim_simulacao(tempo_disco, tempo_fita, tempo_impressora, id, alta_prioridade, baixa_prioridade, fila_disco, fila_fita, fila_impressora);//Checa se a simulação chegou ao fim
     }

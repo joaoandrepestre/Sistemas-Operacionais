@@ -3,7 +3,7 @@
 
 //Define constantes para simulador
 #define MAX_PROCESSOS 10 //número máximo de processos
-#define TEMPO 3 //Duração de uma fatia de tempo em segundos
+#define TEMPO 2 //Duração de uma fatia de tempo em segundos
 #define DISCO 3 //Duração de um IO de disco em fatias de tempo 
 #define FITA 6 //Duração de um IO de fita em fatias de tempo
 #define IMPRESSORA 9 //Duração de um IO de impressora em fatias de tempo

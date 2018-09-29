@@ -62,10 +62,10 @@ void printFila(Fila* fila){
     Item* item = fila->primeiro; //Pega primeiro ítem da fila
     if(item != NULL){//Se a fila não está vazia
         while(item->proximo != NULL){//Enquanto o ítem não for o último
-            printf("(%d, %d tempos), ", item->proc->contexto.PID, item->proc->duracao_restante);//Imprime o PID e o tempo restante do processo
+            printf("{id: %d|tempo restante: %d}, ", item->proc->contexto.PID, item->proc->duracao_restante);//Imprime o PID e o tempo restante do processo
             item = item->proximo;//Pega o próximo ítem
         }
-        printf("(%d,%d tempos)\n", item->proc->contexto.PID, item->proc->duracao_restante);//Imprime o último processo
+        printf("{id: %d|tempo restante: %d}\n", item->proc->contexto.PID, item->proc->duracao_restante);//Imprime o último processo
     }else printf("\n");//Se a fila estiver vazia, imprime linha vazia
 }
 
@@ -87,7 +87,6 @@ Processo* criaProcesso(int process_id, int parent_id, int t_inic, int duracao, I
 
 //Cria ou não um novo processo no intervalo de tempo atual com uma certa probabilidade 
 void insereProcesso(int tempo_atual, int* id, Fila* alta_prioridade, int probabilidade_criar_processo){
-    int duracao_max_pos_io = 10;//Define número máximo de fatias de tempo que o processo pode ocupar após o fim do IO
     IO tipo_io; //Declara o tipo de IO 
     int tempo_io; //Declara o tempo de inicio do IO
     int duracao_io; //Declara duração de IO
@@ -111,7 +110,7 @@ void insereProcesso(int tempo_atual, int* id, Fila* alta_prioridade, int probabi
                 duracao_io = 0;
                 break;
         }
-        duracao_total = tempo_io + duracao_io + rand()%duracao_max_pos_io;//Define duração máxima aleatória.
+        duracao_total = tempo_io + duracao_io + rand()%10;//Define duração máxima aleatória.
         Processo* novo_processo = criaProcesso(*id,0,tempo_atual, duracao_total, tipo_io, tempo_io);//Cria o novo processo com os parâmetros definidos acima.
         push(alta_prioridade, novo_processo);//Insere o novo processo na fila de alta prioridade
 
@@ -121,7 +120,7 @@ void insereProcesso(int tempo_atual, int* id, Fila* alta_prioridade, int probabi
                     "Prioridade: %d\n\t"
                     "Status: %d\n\t" 
                     "Duração: %d\n\t"
-                    "Faz IO do tipo %d a partir do tempo %d\n\n",
+                    "Faz IO do tipo %d a partir do tempo %d\n",
                     novo_processo->contexto.PID, 
                     novo_processo->contexto.prioridade, 
                     novo_processo->contexto.status,
@@ -174,9 +173,9 @@ void executaProcesso(int tempo_atual, Processo** executando, Fila* alta_priorida
 
 //Retorna os processos executados para a fila de baixa prioridade
 void terminaExecucaoProcesso(Processo** executando, Fila* baixa_prioridade){
-    if(*executando != NULL){//Se existe um processo roddando
+    if(*executando != NULL){//Se existe um processo rodando
         int id = (*executando)->contexto.PID;
-        printf("Processo %d executado por 1 fatia de tempo.\n\n", id);//Informa a execução do processo
+        printf("Processo %d executado por 1 fatia de tempo.\n", id);//Informa a execução do processo
         if((*executando)->duracao_restante > 0){ //Se o processo não acabou de ser executado
             (*executando)->contexto.status = ready;//Redefine status
             (*executando)->contexto.prioridade = baixa;//Redefine prioridade
@@ -184,8 +183,8 @@ void terminaExecucaoProcesso(Processo** executando, Fila* baixa_prioridade){
             *executando = NULL;//Define que não há processo rodando
         }
         else{//Se o processo acabou sua execução
-            printf("Processo %d finalizado.\n\n", id);//Informa o usúario do fim da execução
-            free(*executando);//Libera memória do processo atual
+            printf("Processo %d finalizado.\n", id);//Informa o usúario do fim da execução
+            *executando = NULL;//Define que não há processo em execução
         }
     }
 }
@@ -225,7 +224,7 @@ void executaIO(IO tipo_io, int* tempo_restante_io, Processo** processo_io, Fila*
                     printf("Impressora ");
                     break;
             }
-        printf("tratando o processo %d estará livre em %d fatias de tempo.\n", (*processo_io)->contexto.PID, *tempo_restante_io);//Informa o usúario qual processo está ocupando e o tempo restante 
+        printf("tratando o processo %d e estará livre em %d fatias de tempo.\n", (*processo_io)->contexto.PID, *tempo_restante_io);//Informa o usúario qual processo está ocupando e o tempo restante 
         (*tempo_restante_io)--;//Executa o IO (decrementa o tempo restante do dispositivo ocupado)
         (*processo_io)->duracao_restante--;//E decrementa a duração restante de execução do processo
     }
@@ -252,7 +251,7 @@ void terminaExecucaoIO(IO tipo_io, int* tempo_restante_io, Processo** processo_i
             }
             printf("e voltou para fila de execução.\n");
             (*processo_io)->contexto.status = ready;//Redefine status
-            (*processo_io)->tipo_IO=0;//Define que não há mais IO para ser executado neste processo
+            (*processo_io)->tipo_IO=nada;//Define que não há mais IO para ser executado neste processo
             push(fila_retorno, *processo_io);//Retorna o processo para a fila de execução
             *processo_io = NULL;
         }
