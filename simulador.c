@@ -135,7 +135,7 @@ void insereProcesso(int tempo_atual, int* id, Fila* alta_prioridade, int probabi
 }
 
 //Executar processos das filas
-void executaProcesso(int tempo_atual, Fila* alta_prioridade, Fila* baixa_prioridade, Fila* fila_disco, Fila* fila_fita, Fila* fila_impressora){
+void executaProcesso(int tempo_atual, Processo** executando, Fila* alta_prioridade, Fila* baixa_prioridade, Fila* fila_disco, Fila* fila_fita, Fila* fila_impressora){
     Processo* atual = pop(alta_prioridade); //Pega o primeiro processo da fila de alta prioridade
     if(atual == NULL) atual = pop(baixa_prioridade); //Se a fila de alta prioridade estiver vazia, pega o primeiro da fila de baixa prioridade
 
@@ -144,9 +144,12 @@ void executaProcesso(int tempo_atual, Fila* alta_prioridade, Fila* baixa_priorid
         return;//Finaliza a função
     }
     int id = atual->contexto.PID;//Pega o identificador do processo
+    int prioridade_atual = atual->contexto.prioridade;
     printf("Processo %d foi selecionado para execução no tempo %d.\n", id, tempo_atual);//Informa o usuário que o processo foi criado
 
     if(atual->tempo_inicial_IO <= tempo_atual){//Se o processo precisa fazer IO nesse momento
+        atual->contexto.status = blocked;//Redefine status
+        atual->contexto.prioridade = io;//Redefine prioridade
         switch(atual->tipo_IO){//Encaminha o processo para a fila de IO apropriada
             case 1:
                 push(fila_disco, atual);
@@ -163,17 +166,32 @@ void executaProcesso(int tempo_atual, Fila* alta_prioridade, Fila* baixa_priorid
         }
     }
 
-    atual->duracao_restante--;//Executa o processo (decrementa seu tempo de execução restante)
-    printf("Processo %d executado por 1 fatia de tempo.\n\n", id);//Informa a execução do processo
-    if(atual->duracao_restante > 0) push(baixa_prioridade, atual);//Se o processo não acabou de ser executado, encaminha ele para fila de baixa prioridade
-    else{//Se o processo acabou sua execução
-        printf("Processo %d finalizado.\n\n", id);//Informa o usúario do fim da execução
-        free(atual);//Libera memória do processo atual
+    atual->contexto.status = running;//Redefine status
+    atual->contexto.prioridade = prioridade_atual;//Redefine prioridade
+    *executando = atual;
+    (*executando)->duracao_restante--;//Executa o processo (decrementa seu tempo de execução restante)
+}
+
+//Retorna os processos executados para a fila de baixa prioridade
+void terminaExecucaoProcesso(Processo** executando, Fila* baixa_prioridade){
+    if(*executando != NULL){//Se existe um processo roddando
+        int id = (*executando)->contexto.PID;
+        printf("Processo %d executado por 1 fatia de tempo.\n\n", id);//Informa a execução do processo
+        if((*executando)->duracao_restante > 0){ //Se o processo não acabou de ser executado
+            (*executando)->contexto.status = ready;//Redefine status
+            (*executando)->contexto.prioridade = baixa;//Redefine prioridade
+            push(baixa_prioridade, *executando);//Encaminha ele para fila de baixa prioridade
+            *executando = NULL;//Define que não há processo rodando
+        }
+        else{//Se o processo acabou sua execução
+            printf("Processo %d finalizado.\n\n", id);//Informa o usúario do fim da execução
+            free(*executando);//Libera memória do processo atual
+        }
     }
 }
 
 //Passa processos das filas de IO para execução de IO
-void executaIO(IO tipo_io, int* tempo_restante_io, Processo** processo_io, Fila* fila_io, Fila* fila_retorno){
+void executaIO(IO tipo_io, int* tempo_restante_io, Processo** processo_io, Fila* fila_io){
 
     if(*tempo_restante_io==0){//Se o dispositivo não está ocupado
         *processo_io = pop(fila_io);//Pega o primeiro processo da fila do dispositivo
@@ -210,24 +228,35 @@ void executaIO(IO tipo_io, int* tempo_restante_io, Processo** processo_io, Fila*
         printf("tratando o processo %d estará livre em %d fatias de tempo.\n", (*processo_io)->contexto.PID, *tempo_restante_io);//Informa o usúario qual processo está ocupando e o tempo restante 
         (*tempo_restante_io)--;//Executa o IO (decrementa o tempo restante do dispositivo ocupado)
         (*processo_io)->duracao_restante--;//E decrementa a duração restante de execução do processo
-        if(*tempo_restante_io==0){//Se o IO foi finalizado
+    }
+}
+
+//Retorna os processos que executaram IO para as filas de execução
+void terminaExecucaoIO(IO tipo_io, int* tempo_restante_io, Processo** processo_io, Fila* fila_retorno){
+
+    if(*tempo_restante_io==0 && *processo_io!=NULL){//Se existe IO em execução e o IO está finalizado 
             printf("Processo %d finalizou IO de ",(*processo_io)->contexto.PID);//Informa o usúario do fim do IO 
             switch(tipo_io){//Informa o tipo de IO finalizado
                 case 1:
+                    (*processo_io)->contexto.prioridade = baixa;//Redefine prioridade
                     printf("disco ");
                     break;
                 case 2:
+                    (*processo_io)->contexto.prioridade = alta;//Redefine prioridade
                     printf("fita ");
                     break;
                 case 3:
+                    (*processo_io)->contexto.prioridade = alta;//Redefine prioridade
                     printf("impressora ");
                     break;
             }
             printf("e voltou para fila de execução.\n");
-            (*processo_io)->tipo_IO=0;
+            (*processo_io)->contexto.status = ready;//Redefine status
+            (*processo_io)->tipo_IO=0;//Define que não há mais IO para ser executado neste processo
             push(fila_retorno, *processo_io);//Retorna o processo para a fila de execução
+            *processo_io = NULL;
         }
-    }
+
 }
 
 //Retorna 1 sse a simulação pode ser terminada

@@ -9,6 +9,9 @@ int main()
     time_t seed;
     srand((unsigned)time(&seed));
 
+    //Define processo ocupando o processador
+    Processo* executando = NULL;
+
     //Define variáveis para IO
     int tempo_disco = 0; //Tempo restante para disco ser liberado. Se 0, então disco está livre para IO
     Processo* io_disco = NULL;//Processo em execução de IO de disco. Se NULL, disco está livre para IO
@@ -73,7 +76,7 @@ int main()
         printFila(fila_impressora);
         printf("\n");
 
-        executaProcesso(tempo, alta_prioridade, baixa_prioridade, fila_disco, fila_fita, fila_impressora); //executa o processo da fila de prioridade correta
+        executaProcesso(tempo, &executando, alta_prioridade, baixa_prioridade, fila_disco, fila_fita, fila_impressora); //executa o processo da fila de prioridade correta
 
         printf("Após execução de processos:\n");
         printf("Fila de Alta Prioridade: ");
@@ -92,9 +95,9 @@ int main()
         printFila(fila_impressora);
         printf("\n");
 
-        executaIO(disco,&tempo_disco, &io_disco, fila_disco, baixa_prioridade);//Executa IO do processo na cabeça da fila de disco
-        executaIO(fita,&tempo_fita, &io_fita, fila_fita, alta_prioridade);//Executa IO do processo na cabeça da fila de fita
-        executaIO(impressora,&tempo_impressora, &io_impressora, fila_impressora, alta_prioridade);//Executa IO do processo na cabeça da fila de impressora
+        executaIO(disco,&tempo_disco, &io_disco, fila_disco);//Executa IO do processo na cabeça da fila de disco
+        executaIO(fita,&tempo_fita, &io_fita, fila_fita);//Executa IO do processo na cabeça da fila de fita
+        executaIO(impressora,&tempo_impressora, &io_impressora, fila_impressora);//Executa IO do processo na cabeça da fila de impressora
 
         printf("Após execução de IO:\n");
         printf("Fila de Alta Prioridade: ");
@@ -112,10 +115,17 @@ int main()
         printf("Fila de Impressora: ");
         printFila(fila_impressora);
         printf("\n");
+        
+        sleep((unsigned long int)TEMPO);
+        
+        terminaExecucaoProcesso(&executando, baixa_prioridade);//Retorna os processos executados para a fila
+
+        //Retorna os processos com IO finalizado as filas de execução
+        terminaExecucaoIO(disco, &tempo_disco, &io_disco, baixa_prioridade);
+        terminaExecucaoIO(fita, &tempo_fita, &io_fita, alta_prioridade);
+        terminaExecucaoIO(impressora, &tempo_impressora, &io_impressora, alta_prioridade);
 
         printf("\n----------------------------------------------------------------\n\n");
-        sleep((unsigned long int)TEMPO);
-
         tempo++;
         fim = fim_simulacao(tempo_disco, tempo_fita, tempo_impressora, id, alta_prioridade, baixa_prioridade, fila_disco, fila_fita, fila_impressora);//Checa se a simulação chegou ao fim
     }
