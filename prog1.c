@@ -39,10 +39,10 @@ int main(void)
         close(pipe1[1]);
 
         // ***** Mostre na tela o texto da mensagem enviada
-        printf("PAI\tMensagem mandada: %s\n\n", msg_envia);
+        printf("PAI\tMensagem enviada: %s\n\n", msg_envia);
 
         // ***** Aguarde a resposta do processo filho
-        wait(NULL);
+        //wait(NULL); -- Inserir esse wait faria a espera ser para o processo inteiro, é isso que queremos mesmo?
 
         // ***** Mostre na tela o texto recebido do processo filho
         char msg_recebe[30];
@@ -103,8 +103,11 @@ int main(void)
         execl("/Bin/ls", "ls", NULL);
         
         // // ***** O que acontece após este comando?
-        printf("FILHO\tSe execl não falhar, essa mensagem não aparecerá no console.\n");
+        // O programa tenta executar o programa ls. Caso ele consiga, o processo atual é substituido pelo do ls.
         // // ***** O que pode acontecer se o comando “execl” falhar?
+        // Caso falhe, o programa segue normalmente, executando as mensagens abaixo
+        
+        printf("FILHO\tSe execl não falhar, essa mensagem não aparecerá no console.\n\n");
         printf("FILHO\tComo 'bin' está escrito incorretamente, execl falhará e essa mensagem aparecerá no concole.\n\n");
     }
     exit(0);
