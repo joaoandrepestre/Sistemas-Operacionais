@@ -28,7 +28,7 @@ int main(void)
         printf("Processo pai sendo executado\n\n");
 
         // ***** Mostre na console o PID do processo pai e do processo filho
-        printf("PAI: PID atual: %d\n     PID filho: %d\n\n",id,fork_ret);
+        printf("PAI\tPID atual: %d\n     \tPID filho: %d\n\n",id,fork_ret);
 
         // ***** Monte uma mensagem e a envie para o processo filho
         // Pipe 1 representa uma mesagem do pai para o filho
@@ -39,7 +39,7 @@ int main(void)
         close(pipe1[1]);
 
         // ***** Mostre na tela o texto da mensagem enviada
-        printf("PAI: Mensagem mandada: %s\n\n", msg_envia);
+        printf("PAI\tMensagem mandada: %s\n\n", msg_envia);
 
         // ***** Aguarde a resposta do processo filho
         wait(NULL);
@@ -49,7 +49,7 @@ int main(void)
         close(pipe2[1]);
         read(pipe2[0],msg_recebe,30);
         close(pipe2[0]);
-        printf("PAI: Resposta recebida: %s\n\n", msg_recebe);
+        printf("PAI\tResposta recebida: %s\n\n", msg_recebe);
 
 
 
@@ -58,12 +58,12 @@ int main(void)
         close(pipe3[1]);
         read(pipe3[0],msg_recebe2,12);
         close(pipe2[0]);
-        printf("PAI: Resposta recebida: %s\n\n", msg_recebe2);
+        printf("PAI\tResposta recebida: %s\n\n", msg_recebe2);
       
           // ***** Aguarde o término do processo filho
         wait(&status);
         // ***** Informe na tela que o filho terminou e que o processo pai também vai encerrarar
-        printf("PAI: Processo filho terminado, processo pai também ira terminar.\n\n");
+        printf("PAI\tProcesso filho terminado, processo pai também ira terminar.\n\n");
 
     } else {
         printf("Processo filho sendo executado\n\n");
@@ -73,21 +73,21 @@ int main(void)
         
         //  ***** Mostre na tela o PID do processo corrente e do processo pai
         int ppid = getppid();
-        printf("FILHO: PID atual: %d\n       PID pai: %d\n\n",id,ppid);
+        printf("FILHO\tPID atual: %d\n       \tPID pai: %d\n\n",id,ppid);
 
         // ***** Aguarde a mensagem do processo pai e ao receber mostre o texto na tela
         char msg_recebe[30];
         close(pipe1[1]);
         read(pipe1[0], msg_recebe,30);
         close(pipe1[0]);
-        printf("FILHO: Mensagem recebida: %s\n\n",msg_recebe);
+        printf("FILHO\tMensagem recebida: %s\n\n",msg_recebe);
 
         // ***** Envie uma mensagem resposta ao pai
         char msg_envia[30] = "Olá pai, tudo bem sim!";
         close(pipe2[0]);
         write(pipe2[1],msg_envia,30);
         close(pipe2[1]);
-        printf("FILHO: Resposta enviada: %s\n\n", msg_envia);
+        printf("FILHO\tResposta enviada: %s\n\n", msg_envia);
         
         // ***** Execute o comando “for” abaixo
         for (j = 0; j <= 10000; j++);
@@ -96,16 +96,16 @@ int main(void)
         sprintf(msg,"%d",j);
         close(pipe3[0]);
         write(pipe3[1],msg,12);
-        printf("FILHO: Mensagem enviada: %s\n\n", msg);
+        printf("FILHO\tMensagem enviada: %s\n\n", msg);
         close(pipe3[1]);
 
         // // ***** Execute o comando abaixo e responda às perguntas
         execl("/Bin/ls", "ls", NULL);
         
         // // ***** O que acontece após este comando?
-        printf("FILHO: Se execl não falhar, essa mensagem não aparecerá no console.\n");
+        printf("FILHO\tSe execl não falhar, essa mensagem não aparecerá no console.\n");
         // // ***** O que pode acontecer se o comando “execl” falhar?
-        printf("FILHO: Como 'bin' está escrito incorretamente, execl falhará e essa mensagem aparecerá no concole.\n\n");
+        printf("FILHO\tComo 'bin' está escrito incorretamente, execl falhará e essa mensagem aparecerá no concole.\n\n");
     }
     exit(0);
 }
