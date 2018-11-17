@@ -13,16 +13,16 @@ int main(void)
     pipe(pipe1);
     pipe(pipe2);
     
-    fork_ret = fork();
-
     // ********* Insira um comando para pegar o PID do processo corrente e mostre na
     //  tela da console.
     id = getpid();
     printf("PID do processo corrente: %d\n\n", id);
 
-    // if (*** insira um comando para criar um subprocesso) { - talvez deva ser chamado direto no fork
-    // ***** Faça com que o processo pai execute este trecho de código
-    if (fork_ret>0) {
+    // if (*** insira um comando para criar um subprocesso) {
+    if ( (fork_ret = fork()) > 0) {
+        // ***** Faça com que o processo pai execute este trecho de código
+        // Feito pelo condicional -> fork retorna 0 para processo filho e o id do filho ( > 0) para processo pai
+
         printf("Processo pai sendo executado\n\n");
 
         // ***** Mostre na console o PID do processo pai e do processo filho
