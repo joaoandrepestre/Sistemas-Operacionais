@@ -19,25 +19,52 @@
         Fim;
 Fim; */
 
+#include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_COMMAND_BUFFER_SIZE 50
+#define MAX_PATH_BUFFER_SIZE    55
 
 int main(){
+    char command_buffer[MAX_COMMAND_BUFFER_SIZE];
+    char path[MAX_PATH_BUFFER_SIZE];
+
+    strcpy(path, "/bin/");
+
     //Lê linha de comando;
     while(1){
+        
+        // Limpa os buffers
+        memset(command_buffer, 0, sizeof(command_buffer));
+        memset(path+5, 0, sizeof(path-5));
+
+        // Pede input ao usuário
+        printf(">> ");
+
         //Percorre a linha retirando o nome do comando;
+        fgets(command_buffer, sizeof command_buffer, stdin);
+        if(command_buffer[0] == '\n') continue;
+
+        // Checa o tamanho do comando, descartando o char nulo
+        char* command_end = strchr(command_buffer, 0);
+        int command_size = (int) (command_end-command_buffer-1);
+
+        // Cria o path completo para o executável
+        strncat(path, command_buffer, command_size);
+
         int fork_ret = fork();
-        if(fork_ret==0){
-            char* nome_do_comando;
-            execl("caminho para comandos", nome_do_comando,0);
-        }
+
+        if(fork_ret == 0)   execl(path, command_buffer, NULL);
+
         else{
             int wstatus;
             wait(&wstatus);
             if(wstatus==0) printf("Executado com sucesso.\n");
             else printf("Código de retorno = %d\n",wstatus);
         }
-        //Lê linha de comando;
     }
 
     return 0;
