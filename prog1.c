@@ -9,9 +9,11 @@ int main(void)
     int fork_ret;
     int pipe1[2];
     int pipe2[2];
+    int pipe3[2];
 
     pipe(pipe1);
     pipe(pipe2);
+    pipe(pipe3);
     
     // ********* Insira um comando para pegar o PID do processo corrente e mostre na
     //  tela da console.
@@ -29,7 +31,9 @@ int main(void)
         printf("PAI: PID atual: %d\n     PID filho: %d\n\n",id,fork_ret);
 
         // ***** Monte uma mensagem e a envie para o processo filho
-        char msg_envia[30] = "Mensagem do pai para o filho.";
+        // Pipe 1 representa uma mesagem do pai para o filho
+        // Logo, o pai fecha o input 
+        char msg_envia[30] = "Olá filho, tudo bem?";
         close(pipe1[0]);
         write(pipe1[1],msg_envia,30);
         close(pipe1[1]);
@@ -37,28 +41,35 @@ int main(void)
         // ***** Mostre na tela o texto da mensagem enviada
         printf("PAI: Mensagem mandada: %s\n\n", msg_envia);
 
-        // ***** Aguarde a resposta do processo filho - ????
-        
-        // ***** Mostre na tela o texto recebido do processo filho - ???
+        // ***** Aguarde a resposta do processo filho
+        wait(NULL);
 
-
-        // ***** Aguarde mensagem do filho e mostre o texto recebido
+        // ***** Mostre na tela o texto recebido do processo filho
         char msg_recebe[30];
         close(pipe2[1]);
         read(pipe2[0],msg_recebe,30);
         close(pipe2[0]);
         printf("PAI: Resposta recebida: %s\n\n", msg_recebe);
 
-        // ***** Aguarde o término do processo filho
+
+
+        // ***** Aguarde mensagem do filho e mostre o texto recebido
+        char msg_recebe2[12];
+        close(pipe3[1]);
+        read(pipe3[0],msg_recebe2,12);
+        close(pipe2[0]);
+        printf("PAI: Resposta recebida: %s\n\n", msg_recebe2);
+      
+          // ***** Aguarde o término do processo filho
         wait(&status);
         // ***** Informe na tela que o filho terminou e que o processo pai também vai encerrarar
-        // O pai não deveria ter um exit?
         printf("PAI: Processo filho terminado, processo pai também ira terminar.\n\n");
 
     } else {
         printf("Processo filho sendo executado\n\n");
 
-        // ***** Faça com que o processo filho execute este trecho de código - fora de ordem
+        // ***** Faça com que o processo filho execute este trecho de código
+        // Definido pelo condicional -> processos filhos tem fork() retornando zero
         
         //  ***** Mostre na tela o PID do processo corrente e do processo pai
         int ppid = getppid();
@@ -72,9 +83,10 @@ int main(void)
         printf("FILHO: Mensagem recebida: %s\n\n",msg_recebe);
 
         // ***** Envie uma mensagem resposta ao pai
-        char msg_envia[30] = "Mensagem do filho para o pai.";
+        char msg_envia[30] = "Olá pai, tudo bem sim!";
         close(pipe2[0]);
         write(pipe2[1],msg_envia,30);
+        close(pipe2[1]);
         printf("FILHO: Resposta enviada: %s\n\n", msg_envia);
         
         // ***** Execute o comando “for” abaixo
@@ -82,16 +94,17 @@ int main(void)
         char msg[12];
         // ***** Envie mensagem ao processo pai com o valor final de “j”
         sprintf(msg,"%d",j);
-        write(pipe2[1],msg,12);
+        close(pipe3[0]);
+        write(pipe3[1],msg,12);
         printf("FILHO: Mensagem enviada: %s\n\n", msg);
-        close(pipe2[1]);
+        close(pipe3[1]);
 
-        // ***** Execute o comando abaixo e responda às perguntas
+        // // ***** Execute o comando abaixo e responda às perguntas
         execl("/Bin/ls", "ls", NULL);
         
-        // ***** O que acontece após este comando?
-        printf("\nFILHO: Se execl não falhar, essa mensagem não aparecerá no console.\n");
-        // ***** O que pode acontecer se o comando “execl” falhar?
+        // // ***** O que acontece após este comando?
+        printf("FILHO: Se execl não falhar, essa mensagem não aparecerá no console.\n");
+        // // ***** O que pode acontecer se o comando “execl” falhar?
         printf("FILHO: Como 'bin' está escrito incorretamente, execl falhará e essa mensagem aparecerá no concole.\n\n");
     }
     exit(0);
