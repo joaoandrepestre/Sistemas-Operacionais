@@ -77,12 +77,11 @@ int main(void)
         printf("Processo filho sendo executado\n\n");
     
         // Como este é o processo filho, é necessário obter o seu id por getpid
-        // E o id do seu pai por getppid
-        id = getpid();
-        int ppid = getppid();
+        // E o id do seu pai é o id do encontrado no início do programa
+        int id_filho = getpid();
 
         // Mostre na tela o PID do processo corrente e do processo pai
-        printf("FILHO\tPID atual: %d\n       \tPID pai: %d\n\n",id,ppid);
+        printf("FILHO\tPID atual: %d\n       \tPID pai: %d\n\n",id_filho,id);
 
         // Aguarde a mensagem do processo pai 
         char msg_recebe[21];
