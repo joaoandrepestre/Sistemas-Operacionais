@@ -10,5 +10,24 @@ typedef struct page_table_entry{
     int frame;
 } page_table_entry;
 
+typedef struct page_table{
+    int tam;
+    page_table_entry* paginas;
+}PageTable;
+
+PageTable* criaPageTable(int tamanho);
+// Cria uma nova estrutura de PageTable
+
+void destroiPageTable(PageTable* page_table);
+// Limpa memória da PageTable
+
+void addPageTableEntry(PageTable* page_table, int pag, presente_bit pres, modificado_bit mod, int fr);
+// Adiciona uma entrada na tabela
+
+void removePageTableEntry(PageTable* page_table, int pag);
+// Remove uma entrada da tabela de páginas
+
+void printPageTable(PageTable* page_table);
+// Imprime a PageTable na tela
 
 #endif //PAGETABLE_H

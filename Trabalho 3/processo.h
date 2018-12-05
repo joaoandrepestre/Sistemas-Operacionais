@@ -11,18 +11,24 @@
 
 typedef struct Processo{
     int PID; // identificador do processo
-    int tam_page_table; // número de páginas que o processo usa 
-    page_table_entry* page_table; // associa cada página ao frame que ela ocupa na memória
-    Fila *fila_paginas; // Fila de páginas na memória
+    PageTable* page_table; // Tabela de paginação
+    Fila* fila_paginas; // Fila de páginas na memória para fazer LRU
 } Processo;
 
-Processo *criaProcesso(int id, memory_frame* memoria_principal, Fila* free_frames_principal, memory_frame* memoria_virtual, Fila* free_frames_virtual);
+Processo *criaProcesso(int id, Memoria* mem_principal, Memoria* mem_virtual);
 // Cria um novo processo com número de páginas aleatório e acessos a páginas aleatórios
 
 void destroiProcesso(Processo* p);
 // Destrutor para o processo
 
-void solicitaPagina(memory_frame* memoria_principal, memory_frame* memoria_virtual);
-// Solicita acesso a uma página aleatóriamente
+int solicitaPagina(Processo* p, Memoria* mem_principal, Memoria* mem_virtual);
+// Solicita acesso a uma página aleatóriamente, retorna o número da página em caso de page fault
+
+int addPageToMemory(Processo* p, Memoria* mem, int pag, presente_bit pres);
+// Adiciona página a memória, adiciona referência a page table, e adiciona página a fila
+// Retorna o frame em que a página foi alocada
+
+void printProcesso(Processo* p);
+// Imprime o processo na tela
 
 #endif //PROCESSO_H

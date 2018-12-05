@@ -20,6 +20,12 @@ Memoria* criaMemoria(int tamanho);
 void destroiMemoria(Memoria* mem);
 // Limpa a memória da estrutura
 
+int addMemoryFrame(Memoria* mem, int id, int pag_num);
+// Adiciona um frame a memória
+
+void removeMemoryFrame(Memoria* mem, int fr);
+// Remove um frame da memória
+
 void printMemoria(Memoria* mem);
 // Imprime a memória na tela
 

@@ -65,11 +65,23 @@ void paraFim(Fila* fila, int pag){
         item = item->proximo;
     }
 
-    if(item == fila->primeiro) fila->primeiro = item->proximo; //Se o ítem correto for o primeiro, o primeiro é o próximo
+    // Se o ítem já for o último, então já está resolvido
+    if(item == fila->ultimo) return;    
+    
+    if(item == fila->primeiro){//Se o ítem correto for o primeiro
+        fila->primeiro = item->proximo;// o primeiro é o próximo 
+        item->proximo = NULL; //O próximo do correto é nulo
+        fila->ultimo->proximo = item; //O próximo do fim da fila é o correto
+        fila->ultimo = item; // O último da fila é o correto
+        return;
+    }
+    
+    // Se o ítem não for o primeiro
     ant->proximo = item->proximo; //O próximo do anterior é o próximo do correto
     item->proximo = NULL; //O próximo do correto é nulo
     fila->ultimo->proximo = item; //O próximo do fim da fila é o correto
     fila->ultimo = item; // O último da fila é o correto
+    
 }
 
 //Retorna 1 sse a fila estiver vazia

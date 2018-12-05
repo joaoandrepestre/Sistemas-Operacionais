@@ -1,11 +1,13 @@
 #include "processo.h"
 #include <stdlib.h>
+#include <stdio.h>
 
-Processo *criaProcesso(int id, memory_frame* memoria_principal, Fila* free_frames_principal, memory_frame* memoria_virtual, Fila* free_frames_virtual)
+Processo *criaProcesso(int id, Memoria* mem_principal, Memoria* mem_virtual)
 {
     int i;
-    int frame_principal;
-    int frame_virtual;
+
+    int fr_principal;
+    int fr_virtual;
 
     // Aloca espaço para o processo
     Processo *p = (Processo*) malloc(sizeof(Processo));
@@ -14,34 +16,22 @@ Processo *criaProcesso(int id, memory_frame* memoria_principal, Fila* free_frame
     p->PID = id;
 
     // Define paginação
-    p->tam_page_table = rand() % MAX_PAGINAS; // Define tamanho da tabela de paginação
-    p->page_table = (page_table_entry*) malloc(sizeof(page_table_entry)*p->tam_page_table); // Aloca memória para tabela de paginação
-
-    frame_principal = pop(free_frames_principal);
-
-    // Coloca primeira página na memória principal
-    memory_frame frame = {id, 0}; 
-    memoria_principal[frame_principal] = frame;
-
-    // Define entrada na tabela de paginação para primeira página
-    page_table_entry pte = {presente, nao_modificado, frame_principal};
-    p->page_table[0] = pte;
-
-    for(i=1;i<p->tam_page_table;i++){
-        frame_virtual = pop(free_frames_virtual);
-        frame.page_number = i;
-        memoria_virtual[frame_virtual] = frame;
-
-        pte.P = ausente;
-        pte.frame = frame_virtual;
-        p->page_table[i] = pte;
-    }
-
-
+    int num_paginas = rand()%MAX_PAGINAS;
+    p->page_table = criaPageTable(num_paginas);
 
     // Define fila para LRU
     p->fila_paginas = criaFila();
-    push(p->fila_paginas, 0);
+
+    // Coloca primeira página na memória principal
+    addPageToMemory(p, mem_principal, 0, presente);
+
+    // Coloca outras páginas na memória virtual
+    for(i=1;i<p->page_table->tam;i++){
+        addPageToMemory(p, mem_virtual, i, ausente);
+    }
+
+    //Imprime informações do processo
+    printProcesso(p);
 
     return p;
 }
@@ -52,4 +42,40 @@ void destroiProcesso(Processo* p)
     free(p->page_table); //Libera memória da tabela de paginação
     destroiFila(p->fila_paginas); //Destroi a fila
     free(p); //Libera memória do ponteiro do processo
+}
+
+// Solicita acesso a uma página aleatóriamente, retorna o número da página em caso de page fault
+int solicitaPagina(Processo* p, Memoria* mem_principal, Memoria* mem_virtual)
+{
+    int pag = rand() % p->page_table->tam; //Seleciona uma página aleatória para solicitar
+    //int pag = 0;
+    if(p->page_table->paginas[pag].P == presente){ // Se a página selecionada está na memória principal
+        printf("Processo %d acessou página %d no frame %d da memória principal\n\n", p->PID, pag, p->page_table->paginas[pag].frame);
+        p->page_table->paginas[pag].M = modificado; // Altera o bit modificado para indicar que a página foi modificada
+        paraFim(p->fila_paginas, pag);
+        return -1;
+    }
+ 
+    printf("PAGE FAULT: Processo %d tentou acessar página %d fora da memória principal\n\n", p->PID, pag);
+    return pag;
+    
+}
+
+// Adiciona página a memória, adiciona referência a page table, e adiciona página a fila
+// Retorna o frame em que a página foi alocada
+int addPageToMemory(Processo* p, Memoria* mem, int pag, presente_bit pres)
+{
+    int frame = addMemoryFrame(mem, p->PID, pag);
+    addPageTableEntry(p->page_table, pag, pres, nao_modificado, frame);
+    if(pres == presente) push(p->fila_paginas, pag);
+
+    return frame;
+}
+
+// Imprime o processo na tela
+void printProcesso(Processo* p)
+{
+    printf("Processo %d\n", p->PID);
+    printf("PageTable:\n");
+    printPageTable(p->page_table);
 }
