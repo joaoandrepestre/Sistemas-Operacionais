@@ -57,20 +57,22 @@ int main(){
 void gerenciaMemoria(Memoria* mem_principal, Memoria* mem_virtual, Processo* p, int pag)
 {
     int frame;
-    int frame_virt;
-    int pag_remov;
 
     // Checa se está dentro do working set limit
     if(p->fila_paginas->tamanho < WSL){
-        // CHECAR SE HÁ ESPAÇO NA MEMÓRIA
-        frame = addPageToMemory(p, mem_principal, pag, presente);
-        printf("O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal\n\n", pag, p->PID, frame);
-        return;
+        // Checa se há espaço na memória principal
+        if(mem_principal->free_frames->tamanho>0){
+            // Adiciona o frame na memória principal
+            frame = addPageToMemory(p, mem_principal, pag, presente);
+            printf("O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal\n\n", pag, p->PID, frame);
+            return;
+        }
+        //SWAP-OUT DE OUTRO PROCESSO
+        printf("Não há espaço na memória principal, outro processo deve sofrer swap-out\n\n");
     }
 
     // Se atingiu o WSL, fazer LRU
-    pag_remov = pop(p->fila_paginas); //Seleciona página mais antiga para remover
-    frame = p->page_table->paginas[pag_remov].frame; //Encontra o frame em que a página está
-    frame_virt = p->page_table->paginas[pag].frame; //Encontra a posição na memória virtual que a página nova se encontra
-    // TROCAR A PÁGINA NOVA COM A PÁGINA ANTIGA
+    frame = swapPagesLRU(p, mem_principal, mem_virtual, pag); // ALGO ESTÁ ERRADO
+    printf("O gerenciador de memória fez LRU no processo %d e inseriu a página %d no frame %d da memória principal\n\n", p->PID, pag, frame);
+
 }

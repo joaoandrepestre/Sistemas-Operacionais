@@ -28,6 +28,10 @@ int addPageToMemory(Processo* p, Memoria* mem, int pag, presente_bit pres);
 // Adiciona página a memória, adiciona referência a page table, e adiciona página a fila
 // Retorna o frame em que a página foi alocada
 
+int swapPagesLRU(Processo* p, Memoria* mem_principal, Memoria* mem_virtual, int pag);
+// Insere a nova página na memória trocando com uma antiga usando LRU
+// Retorna o frame em que a página foi alocada
+
 void printProcesso(Processo* p);
 // Imprime o processo na tela
 

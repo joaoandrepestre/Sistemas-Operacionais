@@ -53,6 +53,7 @@ int solicitaPagina(Processo* p, Memoria* mem_principal, Memoria* mem_virtual)
         printf("Processo %d acessou página %d no frame %d da memória principal\n\n", p->PID, pag, p->page_table->paginas[pag].frame);
         p->page_table->paginas[pag].M = modificado; // Altera o bit modificado para indicar que a página foi modificada
         paraFim(p->fila_paginas, pag);
+        printf("Show de bola\n");
         return -1;
     }
  
@@ -70,6 +71,35 @@ int addPageToMemory(Processo* p, Memoria* mem, int pag, presente_bit pres)
     if(pres == presente) push(p->fila_paginas, pag);
 
     return frame;
+}
+
+// Insere a nova página na memória trocando com uma antiga usando LRU
+// Retorna o frame em que a página foi alocada
+int swapPagesLRU(Processo* p, Memoria* mem_principal, Memoria* mem_virtual, int pag)
+{
+    int frame;
+    int pag_remov;
+    int frame_remov;
+
+    frame = p->page_table->paginas[pag].frame; //Encontra onde a página nova se encontra na memória virtual
+
+    pag_remov = pop(p->fila_paginas); //Pega a página mais antiga para ser removida da memória principal
+    frame_remov = p->page_table->paginas[pag_remov].frame; //Encontra onde a página se encontra na memória principal 
+
+    mem_principal->frames[frame_remov].page_number = pag; // Insere a nova página na memória principal
+    // Altera o registro da nova página na page table
+    p->page_table->paginas[pag].P = presente; 
+    p->page_table->paginas[pag].frame = frame_remov;
+
+    mem_virtual->frames[frame].page_number = pag_remov; // Insere a página antiga na memória virtual
+    // Altera registro da página antiga na page table
+    p->page_table->paginas[pag_remov].P = ausente;
+    p->page_table->paginas[pag_remov].frame = frame;
+
+    // Insere nova página no fim da fila de páginas para LRU
+    push(p->fila_paginas, pag);
+
+    return frame_remov;    
 }
 
 // Imprime o processo na tela
