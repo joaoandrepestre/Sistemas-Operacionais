@@ -15,6 +15,9 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
 int *swapOutProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, int pag);
 // Faz swap-out no processo mais antigo para colocar a página nova na memória principal
 
+void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p);
+// Faz swap-in no processo que sofreu swap-out
+
 int main()
 {
 
@@ -57,6 +60,7 @@ int main()
                 // Se ocorreu page fault, chama o gerenciador de memória para resolver
                 gerenciaMemoria(mem_principal, mem_virtual, processos, fila_processos, processos[i], pag);
             }
+            // Manda o processo para o fim da fila
             paraFim(fila_processos, processos[i]->PID);
         }
     }
@@ -73,6 +77,10 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
     {
         // SWAP-IN DO PROCESSO
         printf("A página sofreu swap-out, deve ser feito swap-in do processo\n\n");
+        int lixo;
+        scanf("%d", &lixo);
+        swapInProcessos(mem_principal, mem_virtual, processos, fila_processos, p);
+        scanf("%d", &lixo);
         return;
     }
 
@@ -106,45 +114,38 @@ int *swapOutProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **p
 {
     int *ret = (int *)malloc(sizeof(int) * 2);
 
-    int i;
-    int j;
+    int i, j, lixo;
     int proc_remov;
-    // Lista de frames e páginas a serem removidos iniiados como -1
-    int frames_remov[4] = {-1, -1, -1, -1};
-    int pags_remov[4] = {-1, -1, -1, -1};
-    int frame;
 
-    proc_remov = pop(fila_processos); // Pega processo mais antigo
-    if (proc_remov == p->PID)
-    { // Se o processo mais antigo for o prórpio processo
-        // Pega o próximo da fila
+    // Pega processo mais antigo diferente de p e que não sofreu swap-out
+    proc_remov = pop(fila_processos); 
+    // Enquanto o processo mais antigo for igual a p ou já tiver sofrido swap-out
+    while(proc_remov == p->PID || processos[proc_remov-1]->S){
+        // Põe ele no fim da fila
         push(fila_processos, proc_remov);
+        // Pega o próximo da fila
         proc_remov = pop(fila_processos);
     }
+
+    processos[proc_remov-1]->S = swaped;
     // Encontra todas as páginas desse processo que estão na memória principal
     j = 0;
     for (i = 0; i < processos[proc_remov - 1]->page_table->tam; i++)
     {
+        if (j == WSL)
+            break;
         if (processos[proc_remov - 1]->page_table->paginas[i].P)
         {
-            frames_remov[j] = processos[proc_remov - 1]->page_table->paginas[i].frame;
-            pags_remov[j] = i;
+            // Remove da memória principal
+            removeMemoryFrame(mem_principal, processos[proc_remov - 1]->page_table->paginas[i].frame);
+            // Adiciona a memória virtual
+            addPageToMemory(processos[proc_remov - 1], mem_virtual, i, ausente, swaped);
             j++;
         }
     }
-
-    // Remove páginas da memória principal
-    for (i = 0; i < 4; i++)
-    {
-        if (frames_remov[i] != -1)
-        {
-            // Remove da memória principal
-            removeMemoryFrame(mem_principal, frames_remov[i]);
-            // Adiciona a memória virtual
-            addPageToMemory(processos[proc_remov - 1], mem_virtual, pags_remov[i], ausente, swaped);
-        }
-    }
-
+    printProcesso(processos[proc_remov-1]);
+    lixo;
+    scanf("%d", &lixo);
     // Insere o processo removido na fila de processos novamente
     push(fila_processos, proc_remov);
 
@@ -153,4 +154,24 @@ int *swapOutProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **p
 
     ret[0] = proc_remov;
     return ret;
+}
+
+// Faz swap-in no processo que sofreu swap-out
+void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p)
+{
+    int i, j;
+
+    // Encontrar todas as páginas do processo que sofreram swap-out
+    j = 0;
+    for (i = 0; i < p->page_table->tam; i++)
+    {
+        if (j == WSL)
+            break;
+        if (p->page_table->paginas[i].S)
+        {
+            p->page_table->paginas[i].S = nao_swaped;
+            gerenciaMemoria(mem_principal, mem_virtual, processos, fila_processos, p, i);
+            j++;
+        }
+    }
 }

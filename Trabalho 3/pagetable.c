@@ -42,7 +42,7 @@ void printPageTable(PageTable *page_table)
     printf("Página\tP\tS\tFrame\n");
     for (i = 0; i < page_table->tam; i++)
     {
-        if (page_table->paginas[i].P)
+        if (page_table->paginas[i].S)
         {
             printf("%d\t%d\t%d\t%d\n", i, page_table->paginas[i].P, page_table->paginas[i].S, page_table->paginas[i].frame);
         }

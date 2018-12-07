@@ -15,6 +15,9 @@ Processo *criaProcesso(int id, Memoria *mem_principal, Memoria *mem_virtual)
     // Define o identificador do processo
     p->PID = id;
 
+    // Define bit de swap-out
+    p->S = nao_swaped;
+
     // Define paginação
     int num_paginas = rand() % MAX_PAGINAS;
     num_paginas = num_paginas > 0 ? num_paginas : 1; //Impede que o número de páginas seja 0

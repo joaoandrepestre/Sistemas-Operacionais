@@ -12,6 +12,7 @@
 typedef struct Processo
 {
     int PID;               // identificador do processo
+    swaped_out S;          // marca se o processo sofreu swap-out
     PageTable *page_table; // Tabela de paginação
     Fila *fila_paginas;    // Fila de páginas na memória para fazer LRU
 } Processo;
