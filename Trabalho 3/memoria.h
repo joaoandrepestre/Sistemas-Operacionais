@@ -3,30 +3,33 @@
 
 #include "fila.h"
 
-typedef struct memory_frame{
+typedef struct memory_frame
+{
     int PID;
     int page_number;
 } memory_frame;
 
-typedef struct memoria{
+typedef struct memoria
+{
     int tam;
-    memory_frame* frames; //frames da memória
-    Fila* free_frames; // fila com os frames livres
+    memory_frame *frames; //frames da memória
+    int *free_frames;     // fila com os frames livres
+    int tam_free_frames;
 } Memoria;
 
-Memoria* criaMemoria(int tamanho);
+Memoria *criaMemoria(int tamanho);
 // Cria uma nova estrutura de memória
 
-void destroiMemoria(Memoria* mem);
+void destroiMemoria(Memoria *mem);
 // Limpa a memória da estrutura
 
-int addMemoryFrame(Memoria* mem, int id, int pag_num);
+int addMemoryFrame(Memoria *mem, int id, int pag_num);
 // Adiciona um frame a memória
 
-void removeMemoryFrame(Memoria* mem, int fr);
+void removeMemoryFrame(Memoria *mem, int fr);
 // Remove um frame da memória
 
-void printMemoria(Memoria* mem);
+void printMemoria(Memoria *mem);
 // Imprime a memória na tela
 
 #endif //MEMORIA_H
