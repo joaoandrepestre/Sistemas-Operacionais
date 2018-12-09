@@ -35,7 +35,7 @@ int main()
 
     while (1)
     {
-        //sleep((unsigned long int)3); // Espera 3 segundos
+        sleep((unsigned long int)3); // Espera 3 segundos
 
         if (id <= MAX_PROCESSOS)
         {                                                                     // Se o número máximo de processos ainda não foi atingido
@@ -47,8 +47,6 @@ int main()
         // Mostra a o estado das memórias principal e virtual
         printf("Memória principal:\n");
         printMemoria(mem_principal);
-        /* printf("Memória virtual:\n");
-        printMemoria(mem_virtual); */
 
         //Para todos os processos criados
         for (i = 0; i < id - 1; i++)
@@ -76,11 +74,8 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
     if (p->page_table->paginas[pag].S)
     {
         // SWAP-IN DO PROCESSO
-        printf("A página sofreu swap-out, deve ser feito swap-in do processo\n\n");
-        int lixo;
-        scanf("%d", &lixo);
+        printf("A página %d sofreu swap-out, deve ser feito swap-in do processo %d\n\n", pag, p->PID);
         swapInProcessos(mem_principal, mem_virtual, processos, fila_processos, p);
-        scanf("%d", &lixo);
         return;
     }
 
@@ -109,7 +104,6 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
     printf("WORKING SET LIMIT do processo %d atingido.\n", p->PID);
     frame = swapPagesLRU(p, mem_principal, mem_virtual, pag);
     printf("O gerenciador de memória fez LRU no processo e inseriu a página %d no frame %d da memória principal\n\n", pag, frame);
-    printProcesso(p);
 }
 
 int swapOutProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p)
@@ -143,12 +137,11 @@ int swapOutProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
             removeMemoryFrame(mem_principal, processos[proc_remov - 1]->page_table->paginas[i].frame);
             // Adiciona a memória virtual
             addPageToMemory(processos[proc_remov - 1], mem_virtual, i, ausente, swaped);
+            // Remove uma página da fila de páginas
+            pop(processos[proc_remov - 1]->fila_paginas);
             j++;
         }
     }
-    printProcesso(processos[proc_remov - 1]);
-    lixo;
-    scanf("%d", &lixo);
     // Insere o processo removido na fila de processos novamente
     push(fila_processos, proc_remov);
 
@@ -183,20 +176,4 @@ void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
 
     // Redefine bit S como nao_swaped
     p->S = nao_swaped;
-
-    /* // Checa se as páginas do processo já na memória somadas com as páginas a serem recolocadas está dentro do WSL
-    if(p->fila_paginas->tamanho + j <= WSL){
-        // Enquanto não houver espaço na memória principal para todas as páginas
-        while(mem_principal->tam_free_frames < j){
-            // Faz swap-out de outros processos
-            swapOutProcessos(mem_principal, mem_virtual, processos, fila_processos, p);
-        }
-        // Recoloca páginas na memória principal
-        for(i=0;i<j;i++){
-            frame = addPageToMemory(p, mem_principal, pag_recoloc[i], presente, nao_swaped);
-            printf("O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal\n\n", pag_recoloc[i], p->PID, frame);
-        }
-        return;
-    }
-    // Se não estiverem dentro do WSL */
 }

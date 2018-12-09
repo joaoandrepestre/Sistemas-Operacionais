@@ -116,8 +116,8 @@ void printFila(Fila *fila)
             printf("{id: %d}, ", item->pagina); //Imprime o ID da página
             item = item->proximo;               //Pega o próximo ítem
         }
-        printf("{id: %d}\n", item->pagina); //Imprime a última página
+        printf("{id: %d}\n\n", item->pagina); //Imprime a última página
     }
     else
-        printf("\n"); //Se a fila estiver vazia, imprime linha vazia
+        printf("\n\n"); //Se a fila estiver vazia, imprime linha vazia
 }

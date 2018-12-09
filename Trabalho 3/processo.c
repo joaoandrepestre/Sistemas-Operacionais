@@ -109,7 +109,8 @@ int swapPagesLRU(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int 
 // Imprime o processo na tela
 void printProcesso(Processo *p)
 {
-    printf("Processo %d\n", p->PID);
+    printf("Processo %d\tSwap: %d\n", p->PID, p->S);
     printf("PageTable:\n");
     printPageTable(p->page_table);
+    printFila(p->fila_paginas);
 }
