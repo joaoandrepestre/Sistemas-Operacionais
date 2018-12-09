@@ -90,15 +90,15 @@ int swapPagesLRU(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int 
     pag_remov = pop(p->fila_paginas);                      //Pega a página mais antiga para ser removida da memória principal
     frame_remov = p->page_table->paginas[pag_remov].frame; //Encontra onde a página se encontra na memória principal
 
-    mem_principal->frames[frame_remov].page_number = pag; // Insere a nova página na memória principal
+    memory_frame mem_fr_novo = {p->PID, pag};
+    mem_principal->frames[frame_remov] = mem_fr_novo; // Insere a nova página na memória principal
     // Altera o registro da nova página na page table
-    p->page_table->paginas[pag].P = presente;
-    p->page_table->paginas[pag].frame = frame_remov;
+    addPageTableEntry(p->page_table, pag, presente, nao_swaped, frame_remov);
 
-    mem_virtual->frames[frame].page_number = pag_remov; // Insere a página antiga na memória virtual
+    memory_frame mem_fr_remov = {p->PID, pag_remov};
+    mem_virtual->frames[frame] = mem_fr_remov; // Insere a página antiga na memória virtual
     // Altera registro da página antiga na page table
-    p->page_table->paginas[pag_remov].P = ausente;
-    p->page_table->paginas[pag_remov].frame = frame;
+    addPageTableEntry(p->page_table, pag_remov, ausente, nao_swaped, frame);
 
     // Insere nova página no fim da fila de páginas para LRU
     push(p->fila_paginas, pag);
