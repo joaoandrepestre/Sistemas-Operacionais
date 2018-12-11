@@ -13,8 +13,8 @@ typedef struct memoria
 {
     int tam;
     memory_frame *frames; //frames da memória
-    int *free_frames;     // fila com os frames livres
-    int tam_free_frames;
+    int *free_frames;     // array binário com os frames livres 
+    int tam_free_frames; // número de frames livres
 } Memoria;
 
 Memoria *criaMemoria(int tamanho);
