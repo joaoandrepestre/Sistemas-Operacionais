@@ -20,7 +20,7 @@ typedef struct fila
 Fila *criaFila();
 //Cria uma nova estrutura de fila
 
-void destroiFila(Fila *fila); //ESSA FUNÇÃO FUNCIONA SEMPRE - JOÃO GOSTO
+void destroiFila(Fila *fila);
 //Limpa a memória da fila
 
 void push(Fila *fila, int pag);
@@ -31,9 +31,6 @@ int pop(Fila *fila);
 
 void paraFim(Fila *fila, int pag);
 //Move página pag para o fim da fila
-
-void ordenaFila(Fila *f);
-//Ordena a fila
 
 int filaVazia(Fila *fila);
 //Retorna 1 sse a fila estiver vazia

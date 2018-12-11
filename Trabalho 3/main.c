@@ -62,6 +62,12 @@ int main()
             paraFim(fila_processos, processos[i]->PID);
         }
     }
+
+    // Limpeza de memória   TALVEZ PENSAR EM UMA FORMA PARA O LOOP ACABAR
+    destroiMemoria(mem_principal);
+    destroiMemoria(mem_virtual);
+    for(i=0;i<MAX_PROCESSOS;i++) destroiProcesso(processos[i]);
+    destroiFila(fila_processos);
 }
 
 // Lida com page faults
