@@ -1,6 +1,7 @@
 #include "processo.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ncurses.h>
 
 Processo *criaProcesso(int id, Memoria *mem_principal, Memoria *mem_virtual)
 {
@@ -36,7 +37,7 @@ Processo *criaProcesso(int id, Memoria *mem_principal, Memoria *mem_virtual)
     }
 
     //Imprime informações do processo
-    printProcesso(p);
+    //printProcesso(p);
 
     return p;
 }
@@ -50,18 +51,20 @@ void destroiProcesso(Processo *p)
 }
 
 // Solicita acesso a uma página aleatóriamente, retorna o número da página em caso de page fault
-int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual)
+int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int* x_log, int* y_log)
 {
     int pag = rand() % p->page_table->tam; //Seleciona uma página aleatória para solicitar
-    //int pag = 0;
+
     if (p->page_table->paginas[pag].P == presente)
     { // Se a página selecionada está na memória principal
-        printf("Processo %d acessou página %d no frame %d da memória principal\n\n", p->PID, pag, p->page_table->paginas[pag].frame);
+        mvprintw(*y_log, *x_log, "Processo %d acessou página %d no frame %d da memória principal", p->PID, pag, p->page_table->paginas[pag].frame);
+        (*y_log)+=2; // Pula uma linha no log
         paraFim(p->fila_paginas, pag);
         return -1;
     }
 
-    printf("PAGE FAULT: Processo %d tentou acessar página %d fora da memória principal\n\n", p->PID, pag);
+    mvprintw(*y_log, *x_log, "PAGE FAULT: Processo %d tentou acessar página %d fora da memória principal", p->PID, pag);
+    (*y_log)+=2; // Pula uma linha no log
     return pag;
 }
 
@@ -107,10 +110,13 @@ int swapPagesLRU(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int 
 }
 
 // Imprime o processo na tela
-void printProcesso(Processo *p)
+void printProcesso(Processo *p, int* x, int* y)
 {
-    printf("Processo %d\tSwap: %d\n", p->PID, p->S);
-    printf("PageTable:\n");
-    printPageTable(p->page_table);
-    printFila(p->fila_paginas);
+    int i;
+    mvprintw(*y,*x,"Processo %d  Swap: %d\n", p->PID, p->S);
+    (*y)++;
+    mvprintw(*y,*x,"PageTable:");
+    (*y)++;
+    printPageTable(p->page_table,x,y);
+    printFila(p->fila_paginas,x,y);
 }

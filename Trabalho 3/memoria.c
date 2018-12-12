@@ -1,6 +1,7 @@
 #include "memoria.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ncurses.h>
 
 // Cria uma nova estrutura de memória
 Memoria *criaMemoria(int tamanho)
@@ -55,16 +56,22 @@ void removeMemoryFrame(Memoria *mem, int fr)
 }
 
 // Imprime a memória na tela
-void printMemoria(Memoria *mem)
+void printMemoria(Memoria *mem, int x, int y)
 {
     int i;
-    printf("Frame\tPID\tPage Number\n");
+    mvprintw(y, x, "Frame");
+    mvprintw(y, x+9, "PID");
+    mvprintw(y, x+16, "Page Number");
     for (i = 0; i < mem->tam; i++)
     {
         if (mem->frames[i].page_number != -1)
         {
-            printf("%d\t%d\t%d\n", i, mem->frames[i].PID, mem->frames[i].page_number);
+            y++;
+            mvprintw(y,x,"%d", i);
+            mvprintw(y,x+9,"%d", mem->frames[i].PID);
+            mvprintw(y,x+16,"%d", mem->frames[i].page_number);
         }
     }
-    printf("\n\n");
+    mvprintw(y+1, x,"\n\n");
+    refresh();
 }

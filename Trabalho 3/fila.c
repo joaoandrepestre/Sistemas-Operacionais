@@ -1,6 +1,7 @@
 #include "fila.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ncurses.h>
 
 //Cria uma nova estrutura de fila
 Fila *criaFila()
@@ -106,18 +107,24 @@ int filaVazia(Fila *fila)
 }
 
 //Imprime a fila na tela
-void printFila(Fila *fila)
+void printFila(Fila *fila, int* x, int* y)
 {
+    int col = 0;
+
     Item *item = fila->primeiro; //Pega primeiro ítem da fila
     if (item != NULL)
     { //Se a fila não está vazia
         while (item->proximo != NULL)
         {                                       //Enquanto o ítem não for o último
-            printf("{id: %d}, ", item->pagina); //Imprime o ID da página
+            mvprintw(*y,(*x)+col,"{id: %d}, ", item->pagina); //Imprime o ID da página
             item = item->proximo;               //Pega o próximo ítem
+            col += 10;
         }
-        printf("{id: %d}\n\n", item->pagina); //Imprime a última página
+        mvprintw(*y,(*x)+col, "{id: %d}", item->pagina); //Imprime a última página
+        (*y)++;
     }
     else
-        printf("\n\n"); //Se a fila estiver vazia, imprime linha vazia
+        (*y)+=2; //Se a fila estiver vazia, imprime linha vazia
+
+    refresh();
 }

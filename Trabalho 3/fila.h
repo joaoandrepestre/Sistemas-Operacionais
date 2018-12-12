@@ -35,7 +35,7 @@ void paraFim(Fila *fila, int pag);
 int filaVazia(Fila *fila);
 //Retorna 1 sse a fila estiver vazia
 
-void printFila(Fila *fila);
+void printFila(Fila *fila, int* x, int* y);
 //Imprime a fila na tela
 
 #endif //FILA_H

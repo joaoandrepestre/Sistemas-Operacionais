@@ -23,7 +23,7 @@ Processo *criaProcesso(int id, Memoria *mem_principal, Memoria *mem_virtual);
 void destroiProcesso(Processo *p);
 // Destrutor para o processo
 
-int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual);
+int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int* x_log, int* y_log);
 // Solicita acesso a uma página aleatóriamente, retorna o número da página em caso de page fault
 
 int addPageToMemory(Processo *p, Memoria *mem, int pag, presente_bit pres, swaped_out swap);
@@ -34,7 +34,7 @@ int swapPagesLRU(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int 
 // Insere a nova página na memória trocando com uma antiga usando LRU
 // Retorna o frame em que a página foi alocada
 
-void printProcesso(Processo *p);
+void printProcesso(Processo *p, int* x, int* y);
 // Imprime o processo na tela
 
 #endif //PROCESSO_H

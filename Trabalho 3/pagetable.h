@@ -37,7 +37,7 @@ void addPageTableEntry(PageTable *page_table, int pag, presente_bit pres, swaped
 void removePageTableEntry(PageTable *page_table, int pag);
 // Remove uma entrada da tabela de páginas
 
-void printPageTable(PageTable *page_table);
+void printPageTable(PageTable *page_table, int* x, int* y);
 // Imprime a PageTable na tela
 
 #endif //PAGETABLE_H

@@ -29,7 +29,7 @@ int addMemoryFrame(Memoria *mem, int id, int pag_num);
 void removeMemoryFrame(Memoria *mem, int fr);
 // Remove um frame da memória
 
-void printMemoria(Memoria *mem);
+void printMemoria(Memoria *mem, int x, int y);
 // Imprime a memória na tela
 
 #endif //MEMORIA_H

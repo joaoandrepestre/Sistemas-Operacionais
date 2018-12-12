@@ -1,6 +1,7 @@
 #include "pagetable.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ncurses.h>
 
 // Cria uma nova estrutura de PageTable
 PageTable *criaPageTable(int tamanho)
@@ -36,16 +37,25 @@ void removePageTableEntry(PageTable *page_table, int pag)
 }
 
 // Imprime a PageTable na tela
-void printPageTable(PageTable *page_table)
+void printPageTable(PageTable *page_table, int* x, int* y)
 {
     int i;
-    printf("Página\tP\tS\tFrame\n");
+    mvprintw(*y,*x,"Página");
+    mvprintw(*y,(*x)+10,"P");
+    mvprintw(*y,(*x)+19,"S");
+    mvprintw(*y,(*x)+24,"Frame");
     for (i = 0; i < page_table->tam; i++)
     {
         if (page_table->paginas[i].S || page_table->paginas[i].P)
         {
-            printf("%d\t%d\t%d\t%d\n", i, page_table->paginas[i].P, page_table->paginas[i].S, page_table->paginas[i].frame);
+            (*y)++;
+            mvprintw(*y,*x,"%d", i);
+            mvprintw(*y,(*x)+9,"%d", page_table->paginas[i].P);
+            mvprintw(*y,(*x)+19,"%d", page_table->paginas[i].S);
+            mvprintw(*y,(*x)+24,"%d", page_table->paginas[i].frame);
+
         }
     }
-    printf("\n\n");
+    (*y)++;
+    refresh();
 }
