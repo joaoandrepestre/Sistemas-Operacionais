@@ -59,19 +59,47 @@ void removeMemoryFrame(Memoria *mem, int fr)
 void printMemoria(Memoria *mem, int x, int y)
 {
     int i;
+    int col = 12;
     mvprintw(y, x, "Frame");
-    mvprintw(y, x+9, "PID");
-    mvprintw(y, x+16, "Page Number");
-    for (i = 0; i < mem->tam; i++)
+    mvprintw(y+1, x, "PID");
+    mvprintw(y+2, x, "Page Number");
+    for (i = 0; i < mem->tam/2; i++)
     {
+
         if (mem->frames[i].page_number != -1)
         {
-            y++;
-            mvprintw(y,x,"%d", i);
-            mvprintw(y,x+9,"%d", mem->frames[i].PID);
-            mvprintw(y,x+16,"%d", mem->frames[i].page_number);
+            mvprintw(y,x+col,"%d", i);
+            mvprintw(y+1,x+col,"%d", mem->frames[i].PID);
+            mvprintw(y+2,x+col,"%d", mem->frames[i].page_number);
+            col+=3;
+        }
+        else{
+            mvprintw(y,x+col,"-", i);
+            mvprintw(y+1,x+col,"-", mem->frames[i].PID);
+            mvprintw(y+2,x+col,"-", mem->frames[i].page_number);
+            col+=3;
         }
     }
-    mvprintw(y+1, x,"\n\n");
+
+    y+=4;
+    col = 12;
+    mvprintw(y, x, "Frame");
+    mvprintw(y+1, x, "PID");
+    mvprintw(y+2, x, "Page Number");
+    for(i=mem->tam/2;i<mem->tam;i++){
+        if (mem->frames[i].page_number != -1)
+        {
+            mvprintw(y,x+col,"%d", i);
+            mvprintw(y+1,x+col,"%d", mem->frames[i].PID);
+            mvprintw(y+2,x+col,"%d", mem->frames[i].page_number);
+            col+=3;
+        }
+        else{
+            mvprintw(y,x+col,"-", i);
+            mvprintw(y+1,x+col,"-", mem->frames[i].PID);
+            mvprintw(y+2,x+col,"-", mem->frames[i].page_number);
+            col+=3;
+        }
+    }
     refresh();
 }

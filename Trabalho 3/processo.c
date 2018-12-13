@@ -51,19 +51,21 @@ void destroiProcesso(Processo *p)
 }
 
 // Solicita acesso a uma página aleatóriamente, retorna o número da página em caso de page fault
-int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int* x_log, int* y_log)
+int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, WINDOW* logger, int* x_log, int* y_log)
 {
     int pag = rand() % p->page_table->tam; //Seleciona uma página aleatória para solicitar
 
     if (p->page_table->paginas[pag].P == presente)
     { // Se a página selecionada está na memória principal
-        mvprintw(*y_log, *x_log, "Processo %d acessou página %d no frame %d da memória principal", p->PID, pag, p->page_table->paginas[pag].frame);
+        mvwprintw(logger, *y_log, *x_log, "Processo %d acessou página %d no frame %d da memória principal", p->PID, pag, p->page_table->paginas[pag].frame);
+        wrefresh(logger);
         (*y_log)+=2; // Pula uma linha no log
         paraFim(p->fila_paginas, pag);
         return -1;
     }
 
-    mvprintw(*y_log, *x_log, "PAGE FAULT: Processo %d tentou acessar página %d fora da memória principal", p->PID, pag);
+    mvwprintw(logger, *y_log, *x_log, "PAGE FAULT: Processo %d tentou acessar página %d fora da memória principal", p->PID, pag);
+    wrefresh(logger);
     (*y_log)+=2; // Pula uma linha no log
     return pag;
 }
@@ -110,13 +112,13 @@ int swapPagesLRU(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int 
 }
 
 // Imprime o processo na tela
-void printProcesso(Processo *p, int* x, int* y)
+void printProcesso(Processo *p, WINDOW* win, int* x, int* y)
 {
     int i;
-    mvprintw(*y,*x,"Processo %d  Swap: %d\n", p->PID, p->S);
+    mvwprintw(win, *y,*x,"Processo %d  Swap: %d\n", p->PID, p->S);
     (*y)++;
-    mvprintw(*y,*x,"PageTable:");
-    (*y)++;
-    printPageTable(p->page_table,x,y);
-    printFila(p->fila_paginas,x,y);
+    mvwprintw(win, *y,*x,"PageTable:");
+    (*y)++; 
+    printPageTable(p->page_table, win,x,y);
+    printFila(p->fila_paginas,win,x,y);
 }

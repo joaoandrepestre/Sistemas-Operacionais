@@ -37,22 +37,22 @@ void removePageTableEntry(PageTable *page_table, int pag)
 }
 
 // Imprime a PageTable na tela
-void printPageTable(PageTable *page_table, int* x, int* y)
+void printPageTable(PageTable *page_table, WINDOW* win, int* x, int* y)
 {
     int i;
-    mvprintw(*y,*x,"Página");
-    mvprintw(*y,(*x)+10,"P");
-    mvprintw(*y,(*x)+19,"S");
-    mvprintw(*y,(*x)+24,"Frame");
+    mvwprintw(win,*y,*x,"Página");
+    mvwprintw(win,*y,(*x)+10,"P");
+    mvwprintw(win,*y,(*x)+19,"S");
+    mvwprintw(win,*y,(*x)+24,"Frame");
     for (i = 0; i < page_table->tam; i++)
     {
         if (page_table->paginas[i].S || page_table->paginas[i].P)
         {
             (*y)++;
-            mvprintw(*y,*x,"%d", i);
-            mvprintw(*y,(*x)+9,"%d", page_table->paginas[i].P);
-            mvprintw(*y,(*x)+19,"%d", page_table->paginas[i].S);
-            mvprintw(*y,(*x)+24,"%d", page_table->paginas[i].frame);
+            mvwprintw(win,*y,*x,"%d", i);
+            mvwprintw(win,*y,(*x)+9,"%d", page_table->paginas[i].P);
+            mvwprintw(win,*y,(*x)+19,"%d", page_table->paginas[i].S);
+            mvwprintw(win,*y,(*x)+24,"%d", page_table->paginas[i].frame);
 
         }
     }

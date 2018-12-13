@@ -10,13 +10,13 @@
 #define MAX_MEMORY_FRAMES 64 //número máximo de frames na memória principal
 #define MAX_PROCESSOS 20     //número máximo de processos
 
-void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, int pag, int* x_log, int* y_log);
+void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, int pag, WINDOW* logger, int* x_log, int* y_log);
 // Lida com page faults
 
 int swapOutProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p);
 // Faz swap-out no processo mais antigo para colocar a página nova na memória principal
 
-void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, int* x_log, int* y_log);
+void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, WINDOW* logger, int* x_log, int* y_log);
 // Faz swap-in no processo que sofreu swap-out
 
 int main()
@@ -29,6 +29,10 @@ int main()
     initscr();
     noecho();
     curs_set(FALSE);
+
+    WINDOW *logger = newwin(LINES-10,COLS, 10,0);
+    wrefresh(logger);
+    scrollok(logger,TRUE);
 
     int id = 1;
     int i;
@@ -44,21 +48,24 @@ int main()
 
     while (1)
     {
-        x_log = 30;
+
+        x_log = 0;
         y_log = 0;
 
         // Mostra a o estado das memórias principal e virtual
         mvprintw(0,0,"Memória principal:");
+        wrefresh(stdscr);
         printMemoria(mem_principal, 0, 1);
 
-        mvprintw(y_log, x_log, "Log:");
+        mvprintw(9, 0, "Log:");
+        wrefresh(logger);
         y_log++;
         // Cria um novo processo
         if (id <= MAX_PROCESSOS)                                              // Se o número máximo de processos ainda não foi atingido
         {
             processos[id - 1] = criaProcesso(id, mem_principal, mem_virtual); // Cria um novo processo, aleatóriamente
             push(fila_processos, id);
-            printProcesso(processos[id-1],&x_log, &y_log); // Imprime  o processo criado no log                                         // Insere o processo na fila 
+            printProcesso(processos[id-1], logger,&x_log, &y_log); // Imprime  o processo criado no log                                         // Insere o processo na fila 
             id++;
         }
 
@@ -66,17 +73,17 @@ int main()
         for (i = 0; i < id - 1; i++)
         {
             // Solicita uma página aleatóriamente
-            pag = solicitaPagina(processos[i], mem_principal, mem_virtual,&x_log, &y_log);
+            pag = solicitaPagina(processos[i], mem_principal, mem_virtual,logger, &x_log, &y_log);
             if (pag != -1)
             {
                 // Se ocorreu page fault, chama o gerenciador de memória para resolver
-                gerenciaMemoria(mem_principal, mem_virtual, processos, fila_processos, processos[i], pag, &x_log, &y_log);
+                gerenciaMemoria(mem_principal, mem_virtual, processos, fila_processos, processos[i], pag, logger,  &x_log, &y_log);
             }
 
             // Manda o processo para o fim da fila
             paraFim(fila_processos, processos[i]->PID);
         }
-        refresh();
+        //wrefresh(logger);
         sleep((unsigned long int)3); // Espera 3 segundos
         clear();
     }
@@ -93,7 +100,7 @@ int main()
 }
 
 // Lida com page faults
-void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, int pag, int* x_log, int* y_log)
+void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, int pag, WINDOW* logger, int* x_log, int* y_log)
 {
     int frame;
     int proc_swap;
@@ -102,9 +109,10 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
     if (p->page_table->paginas[pag].S)
     {
         // SWAP-IN DO PROCESSO
-        mvprintw(*y_log, *x_log, "A página %d sofreu swap-out, deve ser feito swap-in do processo %d", pag, p->PID);
+        mvwprintw(logger, *y_log, *x_log, "A página %d sofreu swap-out, deve ser feito swap-in do processo %d", pag, p->PID);
+        wrefresh(logger);
         (*y_log)+=2;
-        swapInProcessos(mem_principal, mem_virtual, processos, fila_processos, p, x_log, y_log);
+        swapInProcessos(mem_principal, mem_virtual, processos, fila_processos, p, logger, x_log, y_log);
         return;
     }
 
@@ -116,28 +124,34 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
         {
             // Adiciona o frame na memória principal
             frame = addPageToMemory(p, mem_principal, pag, presente, nao_swaped);
-            mvprintw(*y_log, *x_log, "O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal", pag, p->PID, frame);
+            mvwprintw(logger,*y_log, *x_log, "O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal", pag, p->PID, frame);
+            wrefresh(logger);
             (*y_log)+=2;
             return;
         }
         // Se não houver espaço na memória principal
         //SWAP-OUT DE OUTRO PROCESSO
-        mvprintw(*y_log, *x_log, "Não há espaço na memória principal, outro processo deve sofrer swap-out");
+        mvwprintw(logger,*y_log, *x_log, "Não há espaço na memória principal, outro processo deve sofrer swap-out");
+        wrefresh(logger);
         (*y_log)++;
         proc_swap = swapOutProcessos(mem_principal, mem_virtual, processos, fila_processos, p);
-        mvprintw(*y_log, *x_log, "O processo %d sofreu swap-out.", proc_swap);
+        mvwprintw(logger, *y_log, *x_log, "O processo %d sofreu swap-out.", proc_swap);
+        wrefresh(logger);
         (*y_log)++;
         frame = addPageToMemory(p, mem_principal, pag, presente, nao_swaped);
-        mvprintw(*y_log, *x_log, "O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal", pag, p->PID, frame);
+        mvwprintw(logger,*y_log, *x_log, "O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal", pag, p->PID, frame);
+        wrefresh(logger);
         (*y_log)+=2;
         return;
     }
 
     // Se atingiu o WSL, fazer LRU
-    mvprintw(*y_log, *x_log, "WORKING SET LIMIT do processo %d atingido.", p->PID);
+    mvwprintw(logger,*y_log, *x_log, "WORKING SET LIMIT do processo %d atingido.", p->PID);
+    wrefresh(logger);
     (*y_log)++;
     frame = swapPagesLRU(p, mem_principal, mem_virtual, pag);
-    mvprintw(*y_log, *x_log, "O gerenciador de memória fez LRU no processo e inseriu a página %d no frame %d da memória principal", pag, frame);
+    mvwprintw(logger,*y_log, *x_log, "O gerenciador de memória fez LRU no processo e inseriu a página %d no frame %d da memória principal", pag, frame);
+    wrefresh(logger);
     (*y_log)+=2;
 }
 
@@ -184,7 +198,7 @@ int swapOutProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
 }
 
 // Faz swap-in no processo que sofreu swap-out
-void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, int* x_log, int* y_log)
+void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **processos, Fila *fila_processos, Processo *p, WINDOW* logger, int* x_log, int* y_log)
 {
     int i, j, frame;
 
@@ -203,7 +217,7 @@ void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
         if (p->page_table->paginas[i].S)
         {
             p->page_table->paginas[i].S = nao_swaped;
-            gerenciaMemoria(mem_principal, mem_virtual, processos, fila_processos, p, i, x_log, y_log);
+            gerenciaMemoria(mem_principal, mem_virtual, processos, fila_processos, p, i, logger, x_log, y_log);
             pag_recoloc[j] = i; // Coloca a página no grupo de páginas que sofreram swap-out
             j++;                // Incrementao contador de páginas encontradas
         }

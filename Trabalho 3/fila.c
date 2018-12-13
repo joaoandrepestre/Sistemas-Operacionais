@@ -107,7 +107,7 @@ int filaVazia(Fila *fila)
 }
 
 //Imprime a fila na tela
-void printFila(Fila *fila, int* x, int* y)
+void printFila(Fila *fila, WINDOW* win, int* x, int* y)
 {
     int col = 0;
 
@@ -116,11 +116,11 @@ void printFila(Fila *fila, int* x, int* y)
     { //Se a fila não está vazia
         while (item->proximo != NULL)
         {                                       //Enquanto o ítem não for o último
-            mvprintw(*y,(*x)+col,"{id: %d}, ", item->pagina); //Imprime o ID da página
+            mvwprintw(win, *y,(*x)+col,"{id: %d}, ", item->pagina); //Imprime o ID da página
             item = item->proximo;               //Pega o próximo ítem
             col += 10;
         }
-        mvprintw(*y,(*x)+col, "{id: %d}", item->pagina); //Imprime a última página
+        mvwprintw(win, *y,(*x)+col, "{id: %d}", item->pagina); //Imprime a última página
         (*y)++;
     }
     else
