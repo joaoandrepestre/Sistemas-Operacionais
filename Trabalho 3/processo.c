@@ -1,7 +1,6 @@
 #include "processo.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <ncurses.h>
 
 Processo *criaProcesso(int id, Memoria *mem_principal, Memoria *mem_virtual)
 {
@@ -45,28 +44,26 @@ Processo *criaProcesso(int id, Memoria *mem_principal, Memoria *mem_virtual)
 // Destrutor para o processo
 void destroiProcesso(Processo *p)
 {
-    free(p->page_table);          //Libera memória da tabela de paginação
-    destroiFila(p->fila_paginas); //Destroi a fila
-    free(p);                      //Libera memória do ponteiro do processo
+    destroiPageTable(p->page_table); //Libera memória da tabela de paginação
+    destroiFila(p->fila_paginas);    //Destroi a fila
+    free(p);                         //Libera memória do ponteiro do processo
 }
 
 // Solicita acesso a uma página aleatóriamente, retorna o número da página em caso de page fault
-int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, WINDOW* logger, int* x_log, int* y_log)
+int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, char **logger_buffer, int *logger_line)
 {
     int pag = rand() % p->page_table->tam; //Seleciona uma página aleatória para solicitar
 
     if (p->page_table->paginas[pag].P == presente)
     { // Se a página selecionada está na memória principal
-        mvwprintw(logger, *y_log, *x_log, "Processo %d acessou página %d no frame %d da memória principal", p->PID, pag, p->page_table->paginas[pag].frame);
-        wrefresh(logger);
-        (*y_log)+=2; // Pula uma linha no log
+        sprintf(logger_buffer[*logger_line], "Processo %d acessou página %d no frame %d da memória principal\n\n", p->PID, pag, p->page_table->paginas[pag].frame);
+        (*logger_line) += 2; // Pula uma linha no log
         paraFim(p->fila_paginas, pag);
         return -1;
     }
 
-    mvwprintw(logger, *y_log, *x_log, "PAGE FAULT: Processo %d tentou acessar página %d fora da memória principal", p->PID, pag);
-    wrefresh(logger);
-    (*y_log)+=2; // Pula uma linha no log
+    sprintf(logger_buffer[*logger_line], "PAGE FAULT: Processo %d tentou acessar página %d fora da memória principal\n\n", p->PID, pag);
+    (*logger_line) += 2; // Pula uma linha no log
     return pag;
 }
 
@@ -112,13 +109,15 @@ int swapPagesLRU(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, int 
 }
 
 // Imprime o processo na tela
-void printProcesso(Processo *p, WINDOW* win, int* x, int* y)
+void printProcesso(Processo *p, char **buffer, int *line)
 {
     int i;
-    mvwprintw(win, *y,*x,"Processo %d  Swap: %d\n", p->PID, p->S);
-    (*y)++;
-    mvwprintw(win, *y,*x,"PageTable:");
-    (*y)++; 
-    printPageTable(p->page_table, win,x,y);
-    printFila(p->fila_paginas,win,x,y);
+    sprintf(buffer[*line], "Processo %d\tSwap: %d\n", p->PID, p->S);
+    (*line)++;
+    sprintf(buffer[*line], "PageTable:\n");
+    (*line)++;
+    printPageTable(p->page_table, buffer, line);
+    printFila(p->fila_paginas, buffer, line);
+    sprintf(buffer[*line], "\n");
+    (*line)++;
 }

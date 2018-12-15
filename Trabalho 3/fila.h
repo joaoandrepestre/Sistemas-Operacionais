@@ -1,8 +1,6 @@
 #ifndef FILA_H
 #define FILA_H
 
-#include <ncurses.h>
-
 //Define estrutura para o item da fila (implementada como lista encadeada)
 typedef struct item
 {
@@ -37,7 +35,7 @@ void paraFim(Fila *fila, int pag);
 int filaVazia(Fila *fila);
 //Retorna 1 sse a fila estiver vazia
 
-void printFila(Fila *fila, WINDOW* win, int* x, int* y);
+void printFila(Fila *fila, char **buffer, int* line);
 //Imprime a fila na tela
 
 #endif //FILA_H

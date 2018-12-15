@@ -1,7 +1,6 @@
 #include "pagetable.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <ncurses.h>
 
 // Cria uma nova estrutura de PageTable
 PageTable *criaPageTable(int tamanho)
@@ -37,25 +36,18 @@ void removePageTableEntry(PageTable *page_table, int pag)
 }
 
 // Imprime a PageTable na tela
-void printPageTable(PageTable *page_table, WINDOW* win, int* x, int* y)
+void printPageTable(PageTable *page_table, char** buffer, int* line)
 {
     int i;
-    mvwprintw(win,*y,*x,"Página");
-    mvwprintw(win,*y,(*x)+10,"P");
-    mvwprintw(win,*y,(*x)+19,"S");
-    mvwprintw(win,*y,(*x)+24,"Frame");
+
+    sprintf(buffer[*line], "Página\tP\tS\tFrame\n");
     for (i = 0; i < page_table->tam; i++)
     {
         if (page_table->paginas[i].S || page_table->paginas[i].P)
         {
-            (*y)++;
-            mvwprintw(win,*y,*x,"%d", i);
-            mvwprintw(win,*y,(*x)+9,"%d", page_table->paginas[i].P);
-            mvwprintw(win,*y,(*x)+19,"%d", page_table->paginas[i].S);
-            mvwprintw(win,*y,(*x)+24,"%d", page_table->paginas[i].frame);
-
+            (*line)++;
+            sprintf(buffer[*line], "%d\t%d\t%d\t%d\n", i, page_table->paginas[i].P, page_table->paginas[i].S, page_table->paginas[i].frame);
         }
     }
-    (*y)++;
-    refresh();
+    (*line)++;
 }

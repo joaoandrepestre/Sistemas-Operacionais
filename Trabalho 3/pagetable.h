@@ -1,8 +1,6 @@
 #ifndef PAGETABLE_H
 #define PAGETABLE_H
 
-#include <ncurses.h>
-
 typedef enum presente
 {
     ausente = 0,
@@ -39,7 +37,7 @@ void addPageTableEntry(PageTable *page_table, int pag, presente_bit pres, swaped
 void removePageTableEntry(PageTable *page_table, int pag);
 // Remove uma entrada da tabela de páginas
 
-void printPageTable(PageTable *page_table, WINDOW* win, int* x, int* y);
+void printPageTable(PageTable *page_table, char **buffer, int *line);
 // Imprime a PageTable na tela
 
 #endif //PAGETABLE_H
