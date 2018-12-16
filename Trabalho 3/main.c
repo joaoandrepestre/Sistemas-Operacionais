@@ -291,10 +291,6 @@ void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
 {
     int i, j, frame;
 
-    int *pag_recoloc = (int *)malloc(sizeof(int) * WSL);
-    for (i = 0; i < WSL; i++)
-        pag_recoloc[i] = -1;
-
     // Encontrar todas as páginas do processo que sofreram swap-out
     j = 0;
     for (i = 0; i < p->page_table->tam; i++)
@@ -307,7 +303,6 @@ void swapInProcessos(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
         {
             p->page_table->paginas[i].S = nao_swaped;
             gerenciaMemoria(mem_principal, mem_virtual, processos, fila_processos, p, i, logger_buffer, logger_line);
-            pag_recoloc[j] = i; // Coloca a página no grupo de páginas que sofreram swap-out
             j++;                // Incrementao contador de páginas encontradas
         }
     }

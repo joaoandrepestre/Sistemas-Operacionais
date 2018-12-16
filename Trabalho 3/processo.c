@@ -56,8 +56,8 @@ int solicitaPagina(Processo *p, Memoria *mem_principal, Memoria *mem_virtual, ch
 
     if (p->page_table->paginas[pag].P == presente)
     { // Se a página selecionada está na memória principal
-        sprintf(logger_buffer[*logger_line], "Processo %d acessou página %d no frame %d da memória principal.\n", p->PID, pag, p->page_table->paginas[pag].frame);
-        (*logger_line) ++; // Pula uma linha no log
+        sprintf(logger_buffer[*logger_line], "Processo %d acessou página %d no frame %d da memória principal.\n\n", p->PID, pag, p->page_table->paginas[pag].frame);
+        (*logger_line) +=2; // Pula uma linha no log
         paraFim(p->fila_paginas, pag);
         return -1;
     }
