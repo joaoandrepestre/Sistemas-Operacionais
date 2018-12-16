@@ -7,8 +7,8 @@
 #include "processo.h"
 #include "fila.h"
 
-#define MAX_MEMORY_FRAMES 64  //número máximo de frames na memória principal
-#define MAX_PROCESSOS 20      //número máximo de processos
+#define MAX_MEMORY_FRAMES 64 //número máximo de frames na memória principal
+#define MAX_PROCESSOS 20     //número máximo de processos
 #define BUFFER_SIZE 400      // tamanho do buffer para log
 #define BUFFER_LINE_SIZE 100 // tamanho da linha do buffer
 
@@ -47,9 +47,9 @@ int main()
     curs_set(FALSE);
 
     // Inicializa janela de log
-    WINDOW *logger = newwin(LINES - 10, COLS, 10, 0);              // Janela do log
-    scrollok(logger, FALSE);                                       // Permite scroll na janela de log
-    keypad(logger, TRUE);                                          // Permite captura do teclado na janela de log
+    WINDOW *logger = newwin(LINES - 10, COLS, 10, 0);                     // Janela do log
+    scrollok(logger, FALSE);                                              // Permite scroll na janela de log
+    keypad(logger, TRUE);                                                 // Permite captura do teclado na janela de log
     char **logger_buffer = (char **)malloc(sizeof(char *) * BUFFER_SIZE); // Buffer do log
     // Buffer do log inicializado com 0
     for (i = 0; i < BUFFER_SIZE; i++)
@@ -71,6 +71,13 @@ int main()
         mvprintw(0, 0, "Memória principal:");
         refresh();
         printMemoria(mem_principal, 0, 1);
+
+        // Mostra na tela os comandos
+        mvprintw(0, 110, "Comandos:");
+        mvprintw(1, 110, "ESC - Stop");
+        mvprintw(2, 110, "SPACE - Pause");
+        mvprintw(3, 110, "RIGHT ARROW - Skip");
+        refresh();
 
         // Inicio da impressão da janela de log
         mvprintw(9, 0, "Log:");
@@ -114,8 +121,25 @@ int main()
         case 27:     // ESC
             fim = 1; // Interrompe o simulador se o usuário apertar ESC
             break;
-        case ' ':                 // Pausa o simulador caso o usuário apertar espaço
+        case ' ': // Pausa o simulador caso o usuário apertar espaço
             // Executado quando o simulador está pausado
+            wclear(stdscr);
+            // Mostra a o estado das memórias principal e virtual
+            mvprintw(0, 0, "Memória principal:");
+            printMemoria(mem_principal, 0, 1);
+
+            // Mostra na tela os comandos
+            mvprintw(0, 110, "Comandos:");
+            mvprintw(1, 110, "ESC - Stop");
+            mvprintw(2, 110, "SPACE - Play");
+            mvprintw(3, 110, "UP ARROW - Scroll up");
+            mvprintw(4, 110, "DOWN ARROW - Scroll down");
+
+            mvprintw(9, 0, "Log:");
+            refresh();
+
+            printLog(logger, logger_buffer, logger_scroll);
+
             wtimeout(logger, -1); // Espera o input do usuário
             key = wgetch(logger);
             while (key != ' ')
@@ -164,7 +188,8 @@ int main()
     for (i = 0; i < id - 1; i++)
         destroiProcesso(processos[i]);
     destroiFila(fila_processos);
-    for(i=0;i<BUFFER_SIZE;i++){
+    for (i = 0; i < BUFFER_SIZE; i++)
+    {
         free(logger_buffer[i]);
     }
     free(logger_buffer);
