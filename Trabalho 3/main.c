@@ -180,18 +180,15 @@ int main()
     wclear(logger);                              // Limpa o log
     wprintw(logger, "Simulação interrompida\n"); // Informa o fim da simulação
     wrefresh(logger);
-    sleep(3); // Espera 3 segundos
+    sleep(1); // Espera 3 segundos
 
     // Limpeza de memória
     destroiMemoria(mem_principal);
     destroiMemoria(mem_virtual);
     for (i = 0; i < id - 1; i++)
         destroiProcesso(processos[i]);
+    free(processos);
     destroiFila(fila_processos);
-    for (i = 0; i < BUFFER_SIZE; i++)
-    {
-        free(logger_buffer[i]);
-    }
     free(logger_buffer);
 
     // Finaliza janela de print organizado
@@ -208,8 +205,8 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
     if (p->page_table->paginas[pag].S)
     {
         // SWAP-IN DO PROCESSO
-        sprintf(logger_buffer[*logger_line], "A página %d sofreu swap-out, deve ser feito swap-in do processo %d\n\n", pag, p->PID);
-        (*logger_line) += 2;
+        sprintf(logger_buffer[*logger_line], "A página %d sofreu swap-out, deve ser feito swap-in do processo %d.\n", pag, p->PID);
+        (*logger_line) ++;
         swapInProcessos(mem_principal, mem_virtual, processos, fila_processos, p, logger_buffer, logger_line);
         return;
     }
@@ -222,13 +219,13 @@ void gerenciaMemoria(Memoria *mem_principal, Memoria *mem_virtual, Processo **pr
         {
             // Adiciona o frame na memória principal
             frame = addPageToMemory(p, mem_principal, pag, presente, nao_swaped);
-            sprintf(logger_buffer[*logger_line], "O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal\n\n", pag, p->PID, frame);
+            sprintf(logger_buffer[*logger_line], "O gerenciador de memória inseriu a página %d do processo %d no frame %d da memória principal.\n\n", pag, p->PID, frame);
             (*logger_line) += 2;
             return;
         }
         // Se não houver espaço na memória principal
         //SWAP-OUT DE OUTRO PROCESSO
-        sprintf(logger_buffer[*logger_line], "Não há espaço na memória principal, outro processo deve sofrer swap-out\n");
+        sprintf(logger_buffer[*logger_line], "Não há espaço na memória principal, outro processo deve sofrer swap-out.\n");
         (*logger_line)++;
         proc_swap = swapOutProcessos(mem_principal, mem_virtual, processos, fila_processos, p);
         sprintf(logger_buffer[*logger_line], "O processo %d sofreu swap-out.\n", proc_swap);
